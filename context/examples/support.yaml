@@ -14,7 +14,7 @@ examples:
     sql: select tenant_id, count(*) from support.tickets where status = 'resolved' and tenant_id not like 'test-%' group by tenant_id
     tables: [support.tickets]
     metric_refs: [resolved_tickets]
-    rule_refs: [R-RESOLVED-IS-STATUS]
+    rule_refs: []
   - id: EX-104
     question: Misroute rate of the support tenant.
     sql: |

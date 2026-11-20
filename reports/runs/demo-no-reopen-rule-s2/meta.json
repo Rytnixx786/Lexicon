@@ -4,7 +4,7 @@
   "context_fingerprint": "4411b79b0fc7d1fd",
   "deterministic_triggers": true,
   "embeddings": true,
-  "golden_version": "golden-e73a9435333b",
+  "golden_version": "golden-7d6750ca1468",
   "hardware": {
     "concurrency": 4,
     "mean_power_w": 118.44032573289903,

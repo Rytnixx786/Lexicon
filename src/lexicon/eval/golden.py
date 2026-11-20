@@ -91,7 +91,7 @@ def load(root: Path = GOLDEN_DIR) -> list[Item]:
 def version(root: Path = GOLDEN_DIR) -> str:
     h = hashlib.sha256()
     for b in BUCKETS:
-        h.update((root / f"{b}.yaml").read_bytes())
+        h.update((root / f"{b}.yaml").read_bytes().replace(b"\r\n", b"\n"))
     return "golden-" + h.hexdigest()[:12]
 
 

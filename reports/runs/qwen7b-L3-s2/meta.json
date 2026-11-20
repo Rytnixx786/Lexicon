@@ -3,7 +3,7 @@
   "context_fingerprint": "8fa1c9ba3ef79f23",
   "deterministic_triggers": true,
   "embeddings": true,
-  "golden_version": "golden-e73a9435333b",
+  "golden_version": "golden-7d6750ca1468",
   "hardware": {
     "concurrency": 4,
     "mean_power_w": 118.44032573289903,

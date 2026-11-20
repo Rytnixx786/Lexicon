@@ -48,11 +48,11 @@ def cached(root: str = str(CONTEXT_DIR)) -> Context:
 
 
 def fingerprint(root: Path = CONTEXT_DIR) -> str:
-    """sha256 over every context file, so eval runs can record exactly which context they used."""
+    """sha256 over every context file (LF-normalised for cross-platform determinism)."""
     h = hashlib.sha256()
     for p in sorted(root.rglob("*.yaml")):
         h.update(p.relative_to(root).as_posix().encode())
-        h.update(p.read_bytes())
+        h.update(p.read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()
 
 

@@ -15,7 +15,7 @@
   "passed": true,
   "payload": {
     "context_fingerprint": "8fa1c9ba3ef79f23",
-    "golden_version": "golden-e73a9435333b",
+    "golden_version": "golden-7d6750ca1468",
     "level": "L3",
     "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
     "model_name": "lexicon-sql-agent",

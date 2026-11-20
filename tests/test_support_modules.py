@@ -100,6 +100,12 @@ def test_hosted_gemini_spend_guard_and_json_schema(tmp_path: Path, monkeypatch: 
         power_w=None,
     )
     assert hosted_costs[0] == pytest.approx(0.50)
+    fallback_gpu = cost.GpuCost.from_tally(tmp_path / "missing.yaml")
+    assert fallback_gpu.purchase_usd == 400.0 and cost.hosted_prices(tmp_path / "missing.yaml")[
+        "gemini-2.5-flash-lite"
+    ] == (0.10, 0.40)
+    fallback_gpu = cost.GpuCost.from_tally(tmp_path / "missing.yaml")
+    assert fallback_gpu.purchase_usd == 400.0 and cost.hosted_prices(tmp_path / "missing.yaml")["gemini-2.5-flash-lite"] == (0.10, 0.40)
 
 
 # ---------------------------------------------------------------- gate

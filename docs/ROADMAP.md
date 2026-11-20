@@ -46,7 +46,7 @@ One task = one checkpoint (plan, build, test, stop and report).
 - [x] **T8.3 BIRD Mini-Dev slice.** Download, select the 200-question slice with committed ids, and run with and without `evidence` using the local model and one hosted model.
 - [x] **T8.4 ARES plugin package.** Entry point, tests (pass, EX drop, protected bucket, over-refusal, version mismatch). Run it through `evaluate_with_plugin("lexicon", ...)`.
 - [x] **T8.5 Gate CI workflow.** Replay-mode eval, gate verdict posted as a PR comment.
-- [x] **T8.6 Demo PR.** A deliberately bad context change (delete rule `R-RESOLVED-IS-STATUS`, `evals/gate_demo/context_without_reopen_rule/`) is blocked by the 3-seed ARES gate (`reports/runs/demo-no-reopen-rule/gate_verdict.json`, summarised in `docs/RESULTS.md`).
+- [x] **T8.6 Demo PR.** A deliberately bad context change (delete rule `R-RESOLVED-IS-STATUS`, `evals/gate_demo/context_without_reopen_rule/`) is blocked by the 3-seed ARES gate in live PR [#1](https://github.com/Rytnixx786/Lexicon/pull/1) (`reports/runs/demo-no-reopen-rule/gate_verdict.json`, summarised in `docs/RESULTS.md`).
 
 **Exit check**: the ablation figure exists, and the gate blocks the demo PR.
 

@@ -231,7 +231,8 @@ class Agent:
     def n_generate(self, state: LexState) -> dict[str, Any]:
         question = state["question"]
         clar = state.get("clarification") or {}
-        context, _ = self._context(question)
+        query = f"{question} {clar['answer']}" if clar.get("answer") else question
+        context, _ = self._context(query)
         rules_line = (
             "- Apply every BUSINESS RULE listed below that is relevant."
             if at_least(self.cfg.level, "L2")

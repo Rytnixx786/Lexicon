@@ -1,0 +1,38 @@
+version: 1
+table: marts.dim_prompt_version
+dbt_model: model.tally.dim_prompt_version
+grain: one row per prompt template version
+primary_key:
+- prompt_version
+description: Prompt template versions with a content hash, so a number can be traced to the exact prompt.
+ai_context: Join to facts on prompt_version for prompt details.
+synonyms:
+- prompts
+- prompt versions
+rule_refs: []
+metric_refs: []
+columns:
+- name: prompt_version
+  type: text
+  description: Version id, e.g. ticket_triage.fewshot_static.v3.
+- name: feature
+  type: text
+  description: Feature the prompt serves.
+- name: prompt_hash
+  type: text
+  description: First 12 hex chars of sha256 of the template file.
+- name: template_path
+  type: text
+  description: Template location in the repo.
+- name: n_fewshot
+  type: int
+  description: Labelled examples per intent included in the prompt.
+  synonyms:
+  - examples per intent
+  - few-shot examples
+- name: description
+  type: text
+  description: What the prompt contains.
+- name: created_at
+  type: timestamptz
+  description: When the prompt was registered.

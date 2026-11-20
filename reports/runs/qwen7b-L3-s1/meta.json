@@ -1,0 +1,22 @@
+{
+  "concurrency": 4,
+  "context_fingerprint": "8fa1c9ba3ef79f23",
+  "deterministic_triggers": true,
+  "embeddings": true,
+  "golden_version": "golden-e73a9435333b",
+  "hardware": {
+    "concurrency": 4,
+    "mean_power_w": 118.25594417077176,
+    "n_live_calls": 242,
+    "wall_seconds": 636.9969656467438
+  },
+  "level": "L3",
+  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+  "n_calls": 278,
+  "n_items": 120,
+  "n_live_calls": 0,
+  "run_id": "qwen7b-L3-s1",
+  "seed": 1,
+  "snapshot_sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df",
+  "wall_seconds": 5.48578143119812
+}

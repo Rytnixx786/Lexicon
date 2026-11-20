@@ -1,0 +1,15 @@
+
+demo-no-reopen-rule: EX 0.412  success 0.433  buckets {"simple": 0.65, 
+"multi_join": 0.45, "metric_definition": 0.15, "business_rule_trap": 0.4, 
+"should_clarify": 0.2, "should_refuse": 0.75}
+wrote H:\Projects\Lexicon\reports\runs\demo-no-reopen-rule
+
+demo-no-reopen-rule-s1: EX 0.412  success 0.433  buckets {"simple": 0.65, 
+"multi_join": 0.45, "metric_definition": 0.15, "business_rule_trap": 0.4, 
+"should_clarify": 0.2, "should_refuse": 0.75}
+wrote H:\Projects\Lexicon\reports\runs\demo-no-reopen-rule-s1
+
+demo-no-reopen-rule-s2: EX 0.412  success 0.442  buckets {"simple": 0.65, 
+"multi_join": 0.45, "metric_definition": 0.15, "business_rule_trap": 0.4, 
+"should_clarify": 0.2, "should_refuse": 0.8}
+wrote H:\Projects\Lexicon\reports\runs\demo-no-reopen-rule-s2

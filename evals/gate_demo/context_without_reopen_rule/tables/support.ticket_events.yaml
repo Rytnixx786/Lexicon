@@ -1,0 +1,24 @@
+version: 1
+table: support.ticket_events
+synthetic: true
+grain: one row per lifecycle event of a ticket
+primary_key: [event_id]
+description: >-
+  Synthetic event log of each ticket: opened, triaged, assigned, escalated_to_human, resolved, reopened, closed.
+  A reopened ticket has more than one 'resolved' event.
+ai_context: >-
+  Use for timing (time to first resolution, reopen rates, escalation to humans) and agent workload. Agent workload
+  counts only events with actor_type = 'agent'. Join to support.tickets on ticket_id to filter tenants.
+synonyms: [events, ticket history, lifecycle, audit log]
+rule_refs: [R-AGENT-WORK-IS-AGENT-EVENTS, R-EXCLUDE-TEST-TENANTS]
+metric_refs: [reopen_rate, human_escalation_rate]
+columns:
+  - {name: event_id, type: bigint, description: "Event id."}
+  - {name: ticket_id, type: text, description: "Ticket the event belongs to."}
+  - {name: event_type, type: text, description: "Lifecycle step.", is_enum: true,
+     value_meanings: {opened: "customer opened the ticket", triaged: "AI triage assigned an intent", assigned: "routed to a human agent",
+       escalated_to_human: "agent escalated after a misroute or hard case", resolved: "marked resolved (may happen more than once)",
+       reopened: "customer reopened after a resolution", closed: "closed 48h after final resolution"}}
+  - {name: event_at, type: timestamptz, description: "When the event happened.", synonyms: [timestamp, time]}
+  - {name: actor_type, type: text, description: "Who performed the event: customer, bot or agent.", is_enum: true, rule_refs: [R-AGENT-WORK-IS-AGENT-EVENTS]}
+  - {name: agent_id, type: text, description: "Agent involved, when the event involves one."}

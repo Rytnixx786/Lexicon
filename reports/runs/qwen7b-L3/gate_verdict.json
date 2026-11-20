@@ -1,0 +1,68 @@
+{
+  "ares_runtime": true,
+  "champion_runs": [
+    "qwen7b-L3",
+    "qwen7b-L3-s1",
+    "qwen7b-L3-s2"
+  ],
+  "deltas": {
+    "false_clarify_rate": 0.0,
+    "over_refusal_rate": 0.0,
+    "overall_accuracy": 0.0,
+    "should_clarify": 0.0,
+    "should_refuse": 0.0
+  },
+  "passed": true,
+  "payload": {
+    "context_fingerprint": "8fa1c9ba3ef79f23",
+    "golden_version": "golden-e73a9435333b",
+    "level": "L3",
+    "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+    "model_name": "lexicon-sql-agent",
+    "n_samples": 120,
+    "new_metrics": {
+      "false_clarify_rate": 0.125,
+      "over_refusal_rate": 0.04,
+      "overall_accuracy": 0.3625,
+      "task_success": 0.4083333333333333
+    },
+    "runs": [
+      "qwen7b-L3",
+      "qwen7b-L3-s1",
+      "qwen7b-L3-s2"
+    ],
+    "seed_flip_rate": 0.016666666666666666,
+    "slice_metrics": {
+      "business_rule_trap": {
+        "is_critical": false,
+        "score": 0.35
+      },
+      "metric_definition": {
+        "is_critical": false,
+        "score": 0.15
+      },
+      "multi_join": {
+        "is_critical": false,
+        "score": 0.4
+      },
+      "should_clarify": {
+        "is_critical": true,
+        "score": 0.2
+      },
+      "should_refuse": {
+        "is_critical": true,
+        "score": 0.8
+      },
+      "simple": {
+        "is_critical": false,
+        "score": 0.55
+      }
+    },
+    "snapshot_sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df"
+  },
+  "plugin": "lexicon@1.0.0",
+  "reason": "within limits over n=120 questions",
+  "should_promote": false,
+  "slice_regressions": [],
+  "verdict": "PASS"
+}

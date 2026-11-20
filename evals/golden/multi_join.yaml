@@ -1,0 +1,139 @@
+bucket: multi_join
+items:
+  - id: G-M-01
+    question: What was B_local's accuracy on the test split in the primary arm for each tenant, shown by tenant display name?
+    gold_sql: |
+      select t.display_name, avg(o.is_correct::int) as accuracy
+      from marts.fct_outcomes o join marts.dim_tenant t on t.tenant_id = o.tenant_id
+      where o.setup = 'B_local' and o.split = 'test' and o.arm = 'primary'
+      group by t.display_name
+  - id: G-M-02
+    question: Total input tokens of B_local calls on the test split in the primary arm, per tenant display name.
+    gold_sql: |
+      select t.display_name, sum(r.input_tokens)
+      from marts.fct_requests r join marts.dim_tenant t on t.tenant_id = r.tenant_id
+      where r.setup = 'B_local' and r.split = 'test' and r.arm = 'primary'
+      group by t.display_name
+  - id: G-M-03
+    question: How many few-shot examples per intent were in the prompt used by B_local's primary test-split decisions?
+    gold_sql: |
+      select distinct p.n_fewshot
+      from marts.fct_outcomes o join marts.dim_prompt_version p on p.prompt_version = o.prompt_version
+      where o.setup = 'B_local' and o.split = 'test' and o.arm = 'primary'
+  - id: G-M-04
+    question: How many support-tenant tickets are assigned to agents who are no longer active?
+    gold_sql: |
+      select count(*) from support.tickets t join support.agents a on a.agent_id = t.assigned_agent_id
+      where t.tenant_id = 'support' and not a.is_active
+  - id: G-M-05
+    question: For each tenant except the load-test tenant, how many distinct tickets were escalated to a human?
+    tests_rules: [R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select t.tenant_id, count(distinct e.ticket_id)
+      from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'escalated_to_human' and t.tenant_id not like 'test-%'
+      group by t.tenant_id
+  - id: G-M-06
+    question: Compare the local model's triage accuracy on tickets that were later reopened against tickets that were never reopened.
+    difficulty: hard
+    gold_sql: |
+      select exists (select 1 from support.ticket_events e where e.ticket_id = t.ticket_id and e.event_type = 'reopened') as reopened,
+             avg(o.is_correct::int) as accuracy
+      from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      where t.tenant_id not like 'test-%'
+      group by 1
+  - id: G-M-07
+    question: What is the average hourly cost of active agents for each tenant display name?
+    gold_sql: |
+      select d.display_name, avg(a.hourly_cost_usd)
+      from support.agents a join marts.dim_tenant d on d.tenant_id = a.team
+      where a.is_active
+      group by d.display_name
+  - id: G-M-08
+    question: How many high-priority tickets does each tenant have, by tenant display name?
+    gold_sql: |
+      select d.display_name, count(*)
+      from support.tickets t join marts.dim_tenant d on d.tenant_id = t.tenant_id
+      where t.priority = 'high'
+      group by d.display_name
+  - id: G-M-09
+    question: For each real tenant, show the normal-priority resolution target in hours and how many normal-priority tickets it has.
+    gold_sql: |
+      select s.tenant_id, s.resolution_hours, count(t.ticket_id)
+      from support.sla_policies s join support.tickets t on t.tenant_id = s.tenant_id and t.priority = s.priority
+      where s.priority = 'normal' and s.tenant_id not like 'test-%'
+      group by s.tenant_id, s.resolution_hours
+  - id: G-M-10
+    question: For decisions whose final call was a cache hit, which model produced them and how many were there?
+    gold_sql: |
+      select r.model, count(*)
+      from marts.fct_outcomes o join marts.fct_requests r on r.request_id = o.final_request_id
+      where r.cache_status = 'HIT'
+      group by r.model
+  - id: G-M-11
+    question: Average decision latency of B_local's primary test-split decisions, broken down by the ticket's channel.
+    gold_sql: |
+      select t.channel, avg(o.total_latency_ms)
+      from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      group by t.channel
+  - id: G-M-12
+    question: For the billing tenant, how many misrouted tickets does each assigned agent have?
+    gold_sql: |
+      select t.assigned_agent_id, count(*)
+      from support.tickets t join support.agents a on a.agent_id = t.assigned_agent_id
+      where t.tenant_id = 'billing' and t.ai_predicted_intent is distinct from t.final_intent
+      group by t.assigned_agent_id
+  - id: G-M-13
+    question: For each real tenant, how many distinct agents resolved at least one ticket?
+    gold_sql: |
+      select t.tenant_id, count(distinct e.agent_id)
+      from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'resolved' and e.actor_type = 'agent' and t.tenant_id not like 'test-%'
+      group by t.tenant_id
+  - id: G-M-14
+    question: What was the local model's triage accuracy on high-priority tickets?
+    gold_sql: |
+      select avg(o.is_correct::int)
+      from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      where t.priority = 'high'
+  - id: G-M-15
+    question: Average cost per vllm call on the test split in the primary arm, per tenant display name.
+    gold_sql: |
+      select d.display_name, avg(r.cost_usd)
+      from marts.fct_requests r join marts.dim_tenant d on d.tenant_id = r.tenant_id
+      where r.provider = 'vllm' and r.split = 'test' and r.arm = 'primary'
+      group by d.display_name
+  - id: G-M-16
+    question: What is the description of each prompt version used in the prompt_selection arm?
+    gold_sql: |
+      select distinct p.prompt_version, p.description
+      from marts.fct_outcomes o join marts.dim_prompt_version p on p.prompt_version = o.prompt_version
+      where o.arm = 'prompt_selection'
+  - id: G-M-17
+    question: For each real tenant, how many tickets are assigned to agents hired in 2026?
+    gold_sql: |
+      select t.tenant_id, count(*)
+      from support.tickets t join support.agents a on a.agent_id = t.assigned_agent_id
+      where a.hired_on >= date '2026-01-01' and t.tenant_id not like 'test-%'
+      group by t.tenant_id
+  - id: G-M-18
+    question: Average number of lifecycle events per ticket for each real tenant.
+    gold_sql: |
+      select t.tenant_id, count(e.event_id)::numeric / count(distinct t.ticket_id)
+      from support.tickets t join support.ticket_events e on e.ticket_id = t.ticket_id
+      where t.tenant_id not like 'test-%'
+      group by t.tenant_id
+  - id: G-M-19
+    question: What was the total AI triage cost of tickets that ended up escalated to a human?
+    difficulty: hard
+    gold_sql: |
+      select sum(o.total_cost_usd)
+      from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      where exists (select 1 from support.ticket_events e where e.ticket_id = t.ticket_id and e.event_type = 'escalated_to_human')
+  - id: G-M-20
+    question: For the sales tenant, how many tickets are there per priority, together with that priority's resolution target in hours?
+    gold_sql: |
+      select t.priority, s.resolution_hours, count(*)
+      from support.tickets t join support.sla_policies s on s.tenant_id = t.tenant_id and s.priority = t.priority
+      where t.tenant_id = 'sales'
+      group by t.priority, s.resolution_hours

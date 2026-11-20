@@ -1,0 +1,406 @@
+{
+ "golden_version": "golden-e73a9435333b",
+ "items": {
+  "G-C-01": {
+   "hash": "sha256:05dfe8f372f67f4c2a3106db",
+   "rows": 1
+  },
+  "G-C-02": {
+   "hash": "sha256:76491364b9c5ebb642d050d8",
+   "rows": 1
+  },
+  "G-C-03": {
+   "hash": "sha256:217e4e35984950ccdd5d3dbd",
+   "rows": 1
+  },
+  "G-C-04": {
+   "hash": "sha256:c268aee67503bdeffdfa2793",
+   "rows": 1
+  },
+  "G-C-05": {
+   "hash": "sha256:fe3873453ed2cc61dd99698d",
+   "rows": 1
+  },
+  "G-C-06": {
+   "hash": "sha256:b03423cc22cb86b79c2c9bd2",
+   "rows": 1
+  },
+  "G-C-07": {
+   "hash": "sha256:4a85c1966084eb53f27b7f26",
+   "rows": 1
+  },
+  "G-C-08": {
+   "hash": "sha256:386e624ba63ef30a3ca443e9",
+   "rows": 2
+  },
+  "G-C-09": {
+   "hash": "sha256:53cce1153d867ace80fc7a40",
+   "rows": 1
+  },
+  "G-C-10": {
+   "hash": "sha256:2a5b0d198aaf41d243e6cf77",
+   "rows": 9
+  },
+  "G-C-11": {
+   "hash": "sha256:8fe603e7588af772994dd619",
+   "rows": 1
+  },
+  "G-C-12": {
+   "hash": "sha256:61694a40c08c9de7f74bfd19",
+   "rows": 1
+  },
+  "G-C-13": {
+   "hash": "sha256:0af187c9e079f8148c2bfb88",
+   "rows": 1
+  },
+  "G-C-14": {
+   "hash": "sha256:61694a40c08c9de7f74bfd19",
+   "rows": 1
+  },
+  "G-C-15": {
+   "hash": "sha256:22d46a52d8a73b953e806c7d",
+   "rows": 1
+  },
+  "G-C-16": {
+   "hash": "sha256:83a4f9ab8e7cef02a2c04c2e",
+   "rows": 2
+  },
+  "G-C-17": {
+   "hash": "sha256:72133a0a39dbe7e088952b20",
+   "rows": 1
+  },
+  "G-C-18": {
+   "hash": "sha256:5543e2897bada6e2513a6627",
+   "rows": 1
+  },
+  "G-C-19": {
+   "hash": "sha256:ced05f3e89f9f57dc8a8ae5a",
+   "rows": 3
+  },
+  "G-C-20": {
+   "hash": "sha256:a211528c91479425056f628f",
+   "rows": 22
+  },
+  "G-D-01": {
+   "hash": "sha256:40e8694f472bc194714059a0",
+   "rows": 2
+  },
+  "G-D-02": {
+   "hash": "sha256:83a4f9ab8e7cef02a2c04c2e",
+   "rows": 2
+  },
+  "G-D-03": {
+   "hash": "sha256:b469ef182860785915f9aed3",
+   "rows": 2
+  },
+  "G-D-04": {
+   "hash": "sha256:5543e2897bada6e2513a6627",
+   "rows": 1
+  },
+  "G-D-05": {
+   "hash": "sha256:207d96738a30d3a2ef1e7362",
+   "rows": 3
+  },
+  "G-D-06": {
+   "hash": "sha256:e5341cdbacbe1c09fc906120",
+   "rows": 1
+  },
+  "G-D-07": {
+   "hash": "sha256:05dfe8f372f67f4c2a3106db",
+   "rows": 1
+  },
+  "G-D-08": {
+   "hash": "sha256:efbe6bf05e22de3d92daa3b0",
+   "rows": 1
+  },
+  "G-D-09": {
+   "hash": "sha256:4a8e88b1011de0df0d0653fa",
+   "rows": 3
+  },
+  "G-D-10": {
+   "hash": "sha256:69d827fe5c4db353a85a8297",
+   "rows": 3
+  },
+  "G-D-11": {
+   "hash": "sha256:a41888b9ba70bb6ec448f6c2",
+   "rows": 3
+  },
+  "G-D-12": {
+   "hash": "sha256:66d12987ec24b36ebf329c84",
+   "rows": 2
+  },
+  "G-D-13": {
+   "hash": "sha256:2a0b0a215475c1c1d3bf5f8f",
+   "rows": 1
+  },
+  "G-D-14": {
+   "hash": "sha256:58d5015e5eb0a56af2faf10a",
+   "rows": 2
+  },
+  "G-D-15": {
+   "hash": "sha256:2910038e15c6c32139f99f98",
+   "rows": 11
+  },
+  "G-D-16": {
+   "hash": "sha256:37aed087d1cfac1ac1185c16",
+   "rows": 1
+  },
+  "G-D-17": {
+   "hash": "sha256:c417a9c8770224c4c60b037e",
+   "rows": 1
+  },
+  "G-D-18": {
+   "hash": "sha256:98af6af1f25061217b7f81ad",
+   "rows": 1
+  },
+  "G-D-19": {
+   "hash": "sha256:2cacb8de7b42d8e93bf8b940",
+   "rows": 3
+  },
+  "G-D-20": {
+   "hash": "sha256:3a96adc2dcf7b7507928d89c",
+   "rows": 1
+  },
+  "G-M-01": {
+   "hash": "sha256:881032ea1c9fe292d8f7479a",
+   "rows": 3
+  },
+  "G-M-02": {
+   "hash": "sha256:d1761253086da1c2806afe3c",
+   "rows": 3
+  },
+  "G-M-03": {
+   "hash": "sha256:0ab68d8d90cafd43c23b8c45",
+   "rows": 1
+  },
+  "G-M-04": {
+   "hash": "sha256:53fef75f0f136fb4bf1df24b",
+   "rows": 1
+  },
+  "G-M-05": {
+   "hash": "sha256:5392532f385dad4c2007bafb",
+   "rows": 3
+  },
+  "G-M-06": {
+   "hash": "sha256:6302c2f71238f3404e0dba55",
+   "rows": 2
+  },
+  "G-M-07": {
+   "hash": "sha256:f625ae5dde0e76bfd8282ef1",
+   "rows": 3
+  },
+  "G-M-08": {
+   "hash": "sha256:811d11f7cd1c0a137336646c",
+   "rows": 3
+  },
+  "G-M-09": {
+   "hash": "sha256:86988dffb30977b9c9284268",
+   "rows": 3
+  },
+  "G-M-10": {
+   "hash": "sha256:004c4569c07c6a3a16286723",
+   "rows": 1
+  },
+  "G-M-11": {
+   "hash": "sha256:b04c0b0c352b512b92088beb",
+   "rows": 3
+  },
+  "G-M-12": {
+   "hash": "sha256:dabbd9fd43c788627284518e",
+   "rows": 7
+  },
+  "G-M-13": {
+   "hash": "sha256:450fdbf86658ee007048921b",
+   "rows": 3
+  },
+  "G-M-14": {
+   "hash": "sha256:1ec84319e2590c1857056647",
+   "rows": 1
+  },
+  "G-M-15": {
+   "hash": "sha256:342ebd8772e508b3105c1fe4",
+   "rows": 3
+  },
+  "G-M-16": {
+   "hash": "sha256:1121cc6f2555eaf192dd5181",
+   "rows": 1
+  },
+  "G-M-17": {
+   "hash": "sha256:471582fff0bb2a90dd938d54",
+   "rows": 2
+  },
+  "G-M-18": {
+   "hash": "sha256:3f3730f17c52922bbc03f728",
+   "rows": 3
+  },
+  "G-M-19": {
+   "hash": "sha256:2dfae55b5c75b552049cd18a",
+   "rows": 1
+  },
+  "G-M-20": {
+   "hash": "sha256:e4c2d8e5bf1782c68672ba88",
+   "rows": 3
+  },
+  "G-S-01": {
+   "hash": "sha256:76e7661c3c67978d996e9294",
+   "rows": 1
+  },
+  "G-S-02": {
+   "hash": "sha256:a779d9d12af13de7bb7a5cd7",
+   "rows": 1
+  },
+  "G-S-03": {
+   "hash": "sha256:a518db1c23744dd12684de13",
+   "rows": 1
+  },
+  "G-S-04": {
+   "hash": "sha256:f7490315564fc4643f24c562",
+   "rows": 3
+  },
+  "G-S-05": {
+   "hash": "sha256:3eea12df6e84f9ab37074ba7",
+   "rows": 1
+  },
+  "G-S-06": {
+   "hash": "sha256:ff0a5653124af779dddb32a1",
+   "rows": 1
+  },
+  "G-S-07": {
+   "hash": "sha256:2056a0dac78e6bdc7db45e74",
+   "rows": 1
+  },
+  "G-S-08": {
+   "hash": "sha256:e8980b1b4ea755da488add35",
+   "rows": 1
+  },
+  "G-S-09": {
+   "hash": "sha256:aee47e99a78719310d06c66c",
+   "rows": 1
+  },
+  "G-S-10": {
+   "hash": "sha256:eb39b76e24632c8b9037da03",
+   "rows": 1
+  },
+  "G-S-11": {
+   "hash": "sha256:efbe6bf05e22de3d92daa3b0",
+   "rows": 1
+  },
+  "G-S-12": {
+   "hash": "sha256:02e793202f13013ef2e1933a",
+   "rows": 1
+  },
+  "G-S-13": {
+   "hash": "sha256:b9cfcb460ead7cebc8921d3c",
+   "rows": 1
+  },
+  "G-S-14": {
+   "hash": "sha256:8734bdd57b5ffe1cd90ea7c2",
+   "rows": 1
+  },
+  "G-S-15": {
+   "hash": "sha256:0f1028ff4fe5be0a32df3d11",
+   "rows": 1
+  },
+  "G-S-16": {
+   "hash": "sha256:127b19cc7e067e3ba2747b81",
+   "rows": 1
+  },
+  "G-S-17": {
+   "hash": "sha256:c52411e2ea0762620d57dda4",
+   "rows": 1
+  },
+  "G-S-18": {
+   "hash": "sha256:37aed087d1cfac1ac1185c16",
+   "rows": 1
+  },
+  "G-S-19": {
+   "hash": "sha256:e8980b1b4ea755da488add35",
+   "rows": 1
+  },
+  "G-S-20": {
+   "hash": "sha256:37aed087d1cfac1ac1185c16",
+   "rows": 1
+  },
+  "G-T-01": {
+   "hash": "sha256:767b1eb78fd833f4f50623d7",
+   "rows": 1
+  },
+  "G-T-02": {
+   "hash": "sha256:f0b8e8414f171a7829a1cdc2",
+   "rows": 3
+  },
+  "G-T-03": {
+   "hash": "sha256:0043921710fdebfc39856cee",
+   "rows": 1
+  },
+  "G-T-04": {
+   "hash": "sha256:61694a40c08c9de7f74bfd19",
+   "rows": 1
+  },
+  "G-T-05": {
+   "hash": "sha256:c268aee67503bdeffdfa2793",
+   "rows": 1
+  },
+  "G-T-06": {
+   "hash": "sha256:72133a0a39dbe7e088952b20",
+   "rows": 1
+  },
+  "G-T-07": {
+   "hash": "sha256:0f1028ff4fe5be0a32df3d11",
+   "rows": 1
+  },
+  "G-T-08": {
+   "hash": "sha256:a211528c91479425056f628f",
+   "rows": 22
+  },
+  "G-T-09": {
+   "hash": "sha256:c268aee67503bdeffdfa2793",
+   "rows": 1
+  },
+  "G-T-10": {
+   "hash": "sha256:09d67f2e01834803ba51e7c7",
+   "rows": 1
+  },
+  "G-T-11": {
+   "hash": "sha256:efbe6bf05e22de3d92daa3b0",
+   "rows": 1
+  },
+  "G-T-12": {
+   "hash": "sha256:8f31a5be723dc668ead35a1d",
+   "rows": 1
+  },
+  "G-T-13": {
+   "hash": "sha256:c3773ba6dc96a64ae68c9f89",
+   "rows": 1
+  },
+  "G-T-14": {
+   "hash": "sha256:f52314f0dbb2d13de81289df",
+   "rows": 1
+  },
+  "G-T-15": {
+   "hash": "sha256:9e976b5c5fed519d4f867459",
+   "rows": 1
+  },
+  "G-T-16": {
+   "hash": "sha256:c623bfb2ec767a7c698aba0c",
+   "rows": 1
+  },
+  "G-T-17": {
+   "hash": "sha256:217e4e35984950ccdd5d3dbd",
+   "rows": 1
+  },
+  "G-T-18": {
+   "hash": "sha256:8400a8379e7354e670b3b24e",
+   "rows": 1
+  },
+  "G-T-19": {
+   "hash": "sha256:c48ae27427fdceaaac6bb2e1",
+   "rows": 1
+  },
+  "G-T-20": {
+   "hash": "sha256:0448d476dc837173912da3d0",
+   "rows": 1
+  }
+ },
+ "verified_at": "2026-11-20"
+}

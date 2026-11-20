@@ -1,0 +1,348 @@
+{
+  "fct_requests": [
+    {
+      "name": "request_id",
+      "type": "uuid"
+    },
+    {
+      "name": "decision_id",
+      "type": "uuid"
+    },
+    {
+      "name": "trace_id",
+      "type": "text"
+    },
+    {
+      "name": "run_id",
+      "type": "text"
+    },
+    {
+      "name": "requested_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "tenant_id",
+      "type": "text"
+    },
+    {
+      "name": "feature",
+      "type": "text"
+    },
+    {
+      "name": "prompt_version",
+      "type": "text"
+    },
+    {
+      "name": "setup",
+      "type": "text"
+    },
+    {
+      "name": "split",
+      "type": "text"
+    },
+    {
+      "name": "arm",
+      "type": "text"
+    },
+    {
+      "name": "call_index",
+      "type": "integer"
+    },
+    {
+      "name": "provider",
+      "type": "text"
+    },
+    {
+      "name": "model",
+      "type": "text"
+    },
+    {
+      "name": "input_tokens",
+      "type": "integer"
+    },
+    {
+      "name": "output_tokens",
+      "type": "integer"
+    },
+    {
+      "name": "cached_input_tokens",
+      "type": "integer"
+    },
+    {
+      "name": "latency_ms",
+      "type": "numeric(14,3)"
+    },
+    {
+      "name": "ttft_ms",
+      "type": "numeric(14,3)"
+    },
+    {
+      "name": "cache_status",
+      "type": "text"
+    },
+    {
+      "name": "http_status",
+      "type": "integer"
+    },
+    {
+      "name": "is_escalated",
+      "type": "boolean"
+    },
+    {
+      "name": "reused_response",
+      "type": "boolean"
+    },
+    {
+      "name": "confidence",
+      "type": "double precision"
+    },
+    {
+      "name": "validation_passed",
+      "type": "boolean"
+    },
+    {
+      "name": "cost_usd",
+      "type": "numeric(14,10)"
+    },
+    {
+      "name": "billed_usd",
+      "type": "numeric(14,10)"
+    }
+  ],
+  "fct_outcomes": [
+    {
+      "name": "decision_id",
+      "type": "uuid"
+    },
+    {
+      "name": "decided_at",
+      "type": "timestamptz"
+    },
+    {
+      "name": "run_id",
+      "type": "text"
+    },
+    {
+      "name": "final_request_id",
+      "type": "uuid"
+    },
+    {
+      "name": "ticket_id",
+      "type": "text"
+    },
+    {
+      "name": "tenant_id",
+      "type": "text"
+    },
+    {
+      "name": "feature",
+      "type": "text"
+    },
+    {
+      "name": "prompt_version",
+      "type": "text"
+    },
+    {
+      "name": "setup",
+      "type": "text"
+    },
+    {
+      "name": "split",
+      "type": "text"
+    },
+    {
+      "name": "arm",
+      "type": "text"
+    },
+    {
+      "name": "model_mix",
+      "type": "text"
+    },
+    {
+      "name": "predicted_label",
+      "type": "text"
+    },
+    {
+      "name": "gold_label",
+      "type": "text"
+    },
+    {
+      "name": "predicted_category",
+      "type": "text"
+    },
+    {
+      "name": "gold_category",
+      "type": "text"
+    },
+    {
+      "name": "is_correct",
+      "type": "boolean"
+    },
+    {
+      "name": "outcome_source",
+      "type": "text"
+    },
+    {
+      "name": "valid",
+      "type": "boolean"
+    },
+    {
+      "name": "escalated",
+      "type": "boolean"
+    },
+    {
+      "name": "any_cache_hit",
+      "type": "boolean"
+    },
+    {
+      "name": "confidence",
+      "type": "double precision"
+    },
+    {
+      "name": "calibrated_confidence",
+      "type": "double precision"
+    },
+    {
+      "name": "total_cost_usd",
+      "type": "numeric(14,10)"
+    },
+    {
+      "name": "total_latency_ms",
+      "type": "numeric(14,3)"
+    },
+    {
+      "name": "n_calls",
+      "type": "integer"
+    },
+    {
+      "name": "flags",
+      "type": "text"
+    }
+  ],
+  "dim_tenant": [
+    {
+      "name": "tenant_id",
+      "type": "text"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "owner_project",
+      "type": "text"
+    },
+    {
+      "name": "monthly_budget_usd",
+      "type": "numeric(12,2)"
+    },
+    {
+      "name": "traffic_mix",
+      "type": "jsonb"
+    }
+  ],
+  "dim_prompt_version": [
+    {
+      "name": "prompt_version",
+      "type": "text"
+    },
+    {
+      "name": "feature",
+      "type": "text"
+    },
+    {
+      "name": "prompt_hash",
+      "type": "text"
+    },
+    {
+      "name": "template_path",
+      "type": "text"
+    },
+    {
+      "name": "n_fewshot",
+      "type": "integer"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz"
+    }
+  ],
+  "mart_cost_per_outcome": [
+    {
+      "name": "day",
+      "type": "date"
+    },
+    {
+      "name": "run_id",
+      "type": "text"
+    },
+    {
+      "name": "tenant_id",
+      "type": "text"
+    },
+    {
+      "name": "feature",
+      "type": "text"
+    },
+    {
+      "name": "setup",
+      "type": "text"
+    },
+    {
+      "name": "model",
+      "type": "text"
+    },
+    {
+      "name": "prompt_version",
+      "type": "text"
+    },
+    {
+      "name": "split",
+      "type": "text"
+    },
+    {
+      "name": "arm",
+      "type": "text"
+    },
+    {
+      "name": "n_decisions",
+      "type": "integer"
+    },
+    {
+      "name": "n_correct",
+      "type": "integer"
+    },
+    {
+      "name": "accuracy",
+      "type": "numeric(8,6)"
+    },
+    {
+      "name": "total_cost_usd",
+      "type": "numeric(16,10)"
+    },
+    {
+      "name": "cost_per_correct_usd",
+      "type": "numeric(16,10)"
+    },
+    {
+      "name": "cache_hit_rate",
+      "type": "numeric(8,6)"
+    },
+    {
+      "name": "escalation_rate",
+      "type": "numeric(8,6)"
+    },
+    {
+      "name": "p50_latency_ms",
+      "type": "numeric(14,3)"
+    },
+    {
+      "name": "p95_latency_ms",
+      "type": "numeric(14,3)"
+    }
+  ]
+}

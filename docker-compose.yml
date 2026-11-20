@@ -1,0 +1,80 @@
+# Lexicon's own Postgres: the frozen evaluation snapshot (lexicon_eval) and LangGraph checkpoints
+# (lexicon_state). The live warehouse stays in Tally's compose stack (port 5432).
+name: lexicon
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lexicon_eval
+      POSTGRES_USER: lexicon_admin
+      POSTGRES_PASSWORD: ${LEXICON_ADMIN_PASSWORD:-lexicon_admin_local}
+      LEXICON_RO_PASSWORD: ${LEXICON_RO_PASSWORD:-lexicon_ro_local}
+    ports: ["${LEXICON_PG_PORT:-5433}:5432"]
+    volumes:
+      - lexicon_pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lexicon_admin -d lexicon_eval"]
+      interval: 5s
+      retries: 20
+
+  # Model serving for evaluation and the app. LEXICON_MODEL picks the served model (weights read from H:).
+  # GPU safety (ADR-017): at most 80% of VRAM, chunked prefill in 1k-token steps, <= 4 sequences at once. An earlier
+  # run at 92% VRAM / 16 sequences shut the workstation down; keep these limits.
+  vllm:
+    profiles: ["model"]
+    image: ${LEXICON_VLLM_IMAGE:-vllm/vllm-openai:v0.6.3.post1}
+    ports: ["8010:8000"]
+    ipc: host
+    volumes:
+      - "${LEXICON_DOWNLOAD_DIR:-./data/downloads}/huggingface:/root/.cache/huggingface"
+    environment: { HF_HUB_OFFLINE: "1", VLLM_WSL2_ENABLE_PIN_MEMORY: "1" }
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+    command: >
+      --model ${LEXICON_MODEL:-Qwen/Qwen2.5-7B-Instruct-AWQ}
+      --quantization awq_marlin
+      --max-model-len 6144
+      --max-num-seqs 4
+      --gpu-memory-utilization ${LEXICON_GPU_MEM:-0.80}
+      --enable-chunked-prefill
+      --max-num-batched-tokens 2048
+      --swap-space 1
+      --enforce-eager
+      --enable-prefix-caching
+      --max-logprobs 20
+      --dtype half
+      --seed 0
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8000/health || exit 1"]
+      interval: 10s
+      retries: 60
+      start_period: 60s
+
+  # Cinch, unmodified (image built from H:\Projects\Cinch); only environment overrides, as in Tally ADR-014.
+  cinch:
+    profiles: ["model"]
+    image: ${LEXICON_CINCH_IMAGE:-cinch-gateway:latest}
+    ports: ["8182:8080"]
+    environment:
+      VLLM_BASE_URL: http://vllm:8000
+      RATE_LIMIT_RPM: "100000"
+      RATE_LIMIT_TPM: "1000000000"
+      MAX_CONCURRENT_INTERACTIVE_REQUESTS: "32"
+      MAX_QUEUE_SIZE: "4096"
+      QUEUE_TIMEOUT_SECONDS: "600"
+      REQUEST_TIMEOUT_SECONDS: "180"
+      SEMANTIC_CACHE_ENABLED: "false"
+      COMPRESSOR_ENABLED: "false"
+      CASCADE_ROUTING_ENABLED: "false"
+      SHADOW_REPLAYER_ENABLED: "false"
+      GUARDRAILS_INJECTION_DEFENSE_ENABLED: "false"
+      FINOPS_DEFAULT_BUDGET_USD: "1000"
+    depends_on:
+      vllm: { condition: service_healthy }
+
+volumes:
+  lexicon_pgdata:

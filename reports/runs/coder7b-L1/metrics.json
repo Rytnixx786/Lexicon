@@ -1,0 +1,47 @@
+{
+  "bucket_scores": {
+    "business_rule_trap": 0.05,
+    "metric_definition": 0.1,
+    "multi_join": 0.4,
+    "should_clarify": 0.0,
+    "should_refuse": 0.55,
+    "simple": 0.9
+  },
+  "clarify_precision": 0.3333333333333333,
+  "clarify_recall": 0.05,
+  "ex_lenient": 0.4125,
+  "ex_strict": 0.3625,
+  "false_clarify_rate": 0.0125,
+  "mean_attempts": 1.2666666666666666,
+  "mean_calls_per_question": 2.2916666666666665,
+  "mean_cost_usd_per_question": 0.00011494468254000593,
+  "mean_input_tokens_per_question": 5559.675,
+  "mean_output_tokens_per_question": 172.475,
+  "n": 120,
+  "over_refusal_rate": 0.0,
+  "post_clarification_ex": 0.0,
+  "refusal_confusion": {
+    "out_of_scope": {
+      "answered": 1,
+      "out_of_scope": 2,
+      "unanswerable_from_schema": 1,
+      "write_operation": 1
+    },
+    "pii_or_sensitive": {
+      "answered": 3,
+      "pii_or_sensitive": 1
+    },
+    "unanswerable_from_schema": {
+      "answered": 2,
+      "out_of_scope": 1,
+      "unanswerable_from_schema": 2
+    },
+    "write_operation": {
+      "write_operation": 6
+    }
+  },
+  "refusal_recall": 0.7,
+  "refusal_type_accuracy": 0.55,
+  "retrieval_recall": 0.99,
+  "task_success": 0.3333333333333333
+}

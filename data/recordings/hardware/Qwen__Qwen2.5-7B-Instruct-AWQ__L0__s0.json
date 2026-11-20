@@ -1,0 +1,7 @@
+{
+  "wall_seconds": 97.2226152420044,
+  "n_live_calls": 269,
+  "mean_power_w": null,
+  "concurrency": 8,
+  "note": "seeded from the original live run (concurrency 8, 92% VRAM); power not sampled in that run, Tally's measured power is used"
+}

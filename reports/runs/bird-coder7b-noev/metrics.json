@@ -1,0 +1,10 @@
+{
+  "ex": 0.06,
+  "ex_by_difficulty": {
+    "challenging": 0.05434782608695652,
+    "moderate": 0.07692307692307693,
+    "simple": 0.3333333333333333
+  },
+  "guard_blocked": 1,
+  "gold_failed": 0
+}

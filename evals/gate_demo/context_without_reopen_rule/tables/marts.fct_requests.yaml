@@ -1,0 +1,153 @@
+version: 1
+table: marts.fct_requests
+dbt_model: model.tally.fct_requests
+grain: one row per model call (a cascade decision that escalates has two calls)
+primary_key:
+- request_id
+description: One row per model call. A cascade decision that escalates has two rows (local call + hosted call),
+  linked by decision_id. Use this table for per-call questions (tokens, latency, cache, cost per call).
+ai_context: 'Use for per-call questions: tokens, latency per call, cache status, provider, cost per call. For accuracy
+  use fct_outcomes. Aggregate requests to decision_id before joining to fct_outcomes to avoid fan-out.'
+synonyms:
+- requests
+- calls
+- model calls
+- LLM calls
+- API calls
+rule_refs:
+- R-BILLED-NOT-COST
+- R-PRIMARY-ARM
+metric_refs:
+- avg_latency_per_call
+- cache_hit_rate
+columns:
+- name: request_id
+  type: uuid
+  description: Unique id of one model call. Join key to Telltale events and to raw spans.
+- name: decision_id
+  type: uuid
+  description: The ticket decision this call belongs to. Several calls can share one decision.
+- name: trace_id
+  type: text
+  description: OpenTelemetry trace id (hex).
+- name: run_id
+  type: text
+  description: Harness run that produced the call.
+- name: requested_at
+  type: timestamptz
+  description: When the call started (span start time).
+- name: tenant_id
+  type: text
+  description: Simulated team that sent the ticket (support, billing, sales).
+- name: feature
+  type: text
+  description: Product feature; always ticket_triage for Tally's own runs.
+- name: prompt_version
+  type: text
+  description: Prompt template version, or 'none' for the TF-IDF baseline.
+- name: setup
+  type: text
+  description: 'Serving setup: A_tfidf (no LLM), B_local (Qwen via Cinch), C_hosted (API model), D_cascade (B then
+    C when unsure).'
+  is_enum: true
+- name: split
+  type: text
+  description: Data split. Headline numbers use 'test' only; 'tune' is for choosing prompts and tau.
+  is_enum: true
+- name: arm
+  type: text
+  description: 'Experiment arm: ''primary'' (the reported configuration), ''prompt_selection'' (non-chosen prompt
+    runs on tune), ''cache_on'' (gateway semantic cache enabled).'
+  is_enum: true
+  rule_refs:
+  - R-PRIMARY-ARM
+- name: call_index
+  type: int
+  description: Position of the call within its decision (0 = first call).
+- name: provider
+  type: text
+  description: gen_ai.provider.name of the call (vllm, openai, sklearn, ...).
+  is_enum: true
+  value_meanings:
+    vllm: local model served by vLLM behind Cinch
+    sklearn: TF-IDF baseline, no LLM
+- name: model
+  type: text
+  description: Model that answered (response model when reported, otherwise requested model).
+  is_enum: true
+- name: input_tokens
+  type: int
+  description: Prompt tokens billed or processed.
+  synonyms:
+  - prompt tokens
+  - tokens in
+- name: output_tokens
+  type: int
+  description: Completion tokens.
+  synonyms:
+  - completion tokens
+  - tokens out
+- name: cached_input_tokens
+  type: int
+  description: Prompt tokens served from the provider's prompt cache, when reported.
+- name: latency_ms
+  type: numeric(14, 3)
+  description: Wall-clock latency of the call in milliseconds, as seen by the client.
+  synonyms:
+  - latency
+  - response time
+  unit: ms
+  expected_range:
+  - 0
+  - 600000
+- name: ttft_ms
+  type: numeric(14, 3)
+  description: Time to first token; NULL because triage calls are not streamed.
+- name: cache_status
+  type: text
+  description: Gateway semantic-cache status (HIT, MISS) or BYPASS when the cache was off or absent.
+  is_enum: true
+  value_meanings:
+    HIT: answered from the gateway semantic cache
+    MISS: cache on but no match
+    BYPASS: cache off or not applicable
+- name: http_status
+  type: int
+  description: HTTP status returned to the client (200, or a gateway rejection such as 400/402/429).
+- name: is_escalated
+  type: boolean
+  description: True when this call happened because the cascade escalated to the hosted model.
+- name: reused_response
+  type: boolean
+  description: True when the cascade reused the identical, deterministic response recorded for setup B or C.
+- name: confidence
+  type: double precision
+  description: Label probability from token logprobs (local model) or class probability (TF-IDF). NULL for the hosted
+    model.
+- name: validation_passed
+  type: boolean
+  description: The output parsed to exactly one valid intent label.
+- name: cost_usd
+  type: numeric(14, 10)
+  description: Tally cost model, in US dollars. GPU amortisation + power for local calls, list price for hosted
+    calls.
+  synonyms:
+  - cost
+  - spend
+  - true cost
+  unit: USD
+  expected_range:
+  - 0
+  - 0.05
+- name: billed_usd
+  type: numeric(14, 10)
+  description: What Cinch's FinOps ledger charged for the call (hosted-style rates). For comparison only; never
+    use as true cost.
+  synonyms:
+  - billed
+  - charged
+  - ledger charge
+  - chargeback
+  unit: USD
+  rule_refs:
+  - R-BILLED-NOT-COST

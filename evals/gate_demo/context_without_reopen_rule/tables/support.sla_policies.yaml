@@ -1,0 +1,15 @@
+version: 1
+table: support.sla_policies
+synthetic: true
+grain: one row per (tenant, priority)
+primary_key: [tenant_id, priority]
+description: Service-level targets per tenant and ticket priority.
+ai_context: Join to support.tickets on tenant_id and priority to test SLA compliance.
+synonyms: [SLA, service levels, targets]
+rule_refs: [R-EXCLUDE-TEST-TENANTS]
+metric_refs: [sla_breach_rate]
+columns:
+  - {name: tenant_id, type: text, description: "Team the policy applies to.", is_enum: true}
+  - {name: priority, type: text, description: "Ticket priority.", is_enum: true}
+  - {name: first_response_minutes, type: integer, description: "Target minutes to first agent response.", unit: minutes}
+  - {name: resolution_hours, type: integer, description: "Target hours from opening to first resolution.", unit: hours, synonyms: [resolution target, SLA hours]}

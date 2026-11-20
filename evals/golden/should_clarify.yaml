@@ -1,0 +1,186 @@
+bucket: should_clarify
+# Each item: the agent must ask (not guess); after the simulated answer, its SQL must match gold_sql_after_answer.
+items:
+  - id: G-C-01
+    question: What is our escalation rate?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [cascade escalation to the hosted model, support tickets escalated to a human]
+      simulated_answer: The share of support tickets escalated to a human.
+      gold_sql_after_answer: |
+        select count(distinct e.ticket_id) filter (where e.event_type = 'escalated_to_human')::numeric / count(distinct e.ticket_id)
+        from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+        where t.tenant_id not like 'test-%'
+  - id: G-C-02
+    question: How long do tickets take to resolve?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [time to first resolution, time to final resolution after reopens]
+      simulated_answer: Average hours from opening to the first resolution.
+      gold_sql_after_answer: |
+        with first_res as (
+          select ticket_id, min(event_at) as first_resolved_at from support.ticket_events where event_type = 'resolved' group by ticket_id
+        )
+        select avg(extract(epoch from f.first_resolved_at - t.opened_at) / 3600)
+        from support.tickets t join first_res f on f.ticket_id = t.ticket_id
+        where t.tenant_id not like 'test-%'
+  - id: G-C-03
+    question: Which setup is best?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [highest accuracy, lowest cost per correct triage]
+      simulated_answer: The one with the highest accuracy on the test split.
+      gold_sql_after_answer: |
+        select setup from marts.fct_outcomes where split = 'test' and arm = 'primary'
+        group by setup order by avg(is_correct::int) desc limit 1
+  - id: G-C-04
+    question: How expensive is the local model?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [total cost, cost per correct triage, cost per call]
+      simulated_answer: Its cost per correct triage on the test split.
+      gold_sql_after_answer: |
+        select sum(total_cost_usd) / nullif(count(*) filter (where is_correct), 0)
+        from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-C-05
+    question: How many escalations did the support team have?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [cascade escalations in the support tenant, support-tenant tickets escalated to a human]
+      simulated_answer: Tickets of the support tenant that were escalated to a human.
+      gold_sql_after_answer: |
+        select count(distinct e.ticket_id) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+        where e.event_type = 'escalated_to_human' and t.tenant_id = 'support'
+  - id: G-C-06
+    question: What is the average resolution time for billing?
+    clarification:
+      ambiguity_type: metric_choice
+      acceptable_options: [time to first resolution, time to final resolution after reopens]
+      simulated_answer: Average hours from opening to the final resolution, including time after reopens.
+      gold_sql_after_answer: |
+        with last_res as (
+          select ticket_id, max(event_at) as last_resolved_at from support.ticket_events where event_type = 'resolved' group by ticket_id
+        )
+        select avg(extract(epoch from l.last_resolved_at - t.opened_at) / 3600)
+        from support.tickets t join last_res l on l.ticket_id = t.ticket_id
+        where t.tenant_id = 'billing'
+  - id: G-C-07
+    question: How many tickets did we get recently?
+    clarification:
+      ambiguity_type: time_window
+      acceptable_options: [last 7 days, last 30 days, this month]
+      simulated_answer: Tickets opened in the last 7 days.
+      gold_sql_after_answer: |
+        select count(*) from support.tickets
+        where opened_at >= timestamptz '2026-11-21' - interval '7 days' and tenant_id not like 'test-%'
+  - id: G-C-08
+    question: Has the misroute rate gone up lately?
+    clarification:
+      ambiguity_type: time_window
+      acceptable_options: [compare this month with last month, compare the last two weeks]
+      simulated_answer: Compare tickets opened in October 2026 with tickets opened in September 2026.
+      gold_sql_after_answer: |
+        select date_trunc('month', opened_at) as month,
+               count(*) filter (where ai_predicted_intent is distinct from final_intent)::numeric / count(*)
+        from support.tickets
+        where tenant_id not like 'test-%' and opened_at >= date '2026-09-01' and opened_at < date '2026-11-01'
+        group by 1
+  - id: G-C-09
+    question: How many tickets were resolved recently?
+    clarification:
+      ambiguity_type: time_window
+      acceptable_options: [last 7 days, last 30 days]
+      simulated_answer: Resolved tickets among those opened in the last 30 days.
+      gold_sql_after_answer: |
+        select count(*) from support.tickets
+        where status in ('resolved', 'closed') and tenant_id not like 'test-%'
+          and opened_at >= timestamptz '2026-11-21' - interval '30 days'
+  - id: G-C-10
+    question: Show ticket volume per tenant over time.
+    clarification:
+      ambiguity_type: time_window
+      acceptable_options: [per day, per week, per month]
+      simulated_answer: Per month.
+      gold_sql_after_answer: |
+        select tenant_id, date_trunc('month', opened_at) as month, count(*)
+        from support.tickets where tenant_id not like 'test-%' group by 1, 2
+  - id: G-C-11
+    question: How many high-priority tickets came in lately?
+    clarification:
+      ambiguity_type: time_window
+      acceptable_options: [last 7 days, last 14 days, last 30 days]
+      simulated_answer: In the last 14 days.
+      gold_sql_after_answer: |
+        select count(*) from support.tickets
+        where priority = 'high' and tenant_id not like 'test-%' and opened_at >= timestamptz '2026-11-21' - interval '14 days'
+  - id: G-C-12
+    question: What is the accuracy of the Qwen setup?
+    clarification:
+      ambiguity_type: entity
+      acceptable_options: [Qwen without the cache (primary arm), Qwen with the semantic cache on (cache_on arm)]
+      simulated_answer: Without the cache, the primary arm on the test split.
+      gold_sql_after_answer: select avg(is_correct::int) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-C-13
+    question: How many tickets did Tanvir Chowdhury resolve?
+    clarification:
+      ambiguity_type: entity
+      acceptable_options: [ag-03 (active), ag-04 (inactive)]
+      simulated_answer: The active one, agent ag-03.
+      gold_sql_after_answer: |
+        select count(distinct ticket_id) from support.ticket_events
+        where agent_id = 'ag-03' and event_type = 'resolved' and actor_type = 'agent'
+  - id: G-C-14
+    question: How accurate was the model?
+    clarification:
+      ambiguity_type: entity
+      acceptable_options: [the TF-IDF baseline, the local Qwen model]
+      simulated_answer: The local Qwen model, on the test split.
+      gold_sql_after_answer: select avg(is_correct::int) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-C-15
+    question: What is Farhana Khan's hourly cost?
+    clarification:
+      ambiguity_type: entity
+      acceptable_options: [ag-12 on the billing team, ag-19 on the sales team]
+      simulated_answer: The one on the sales team.
+      gold_sql_after_answer: select hourly_cost_usd from support.agents where agent_id = 'ag-19'
+  - id: G-C-16
+    question: What's the accuracy?
+    clarification:
+      ambiguity_type: scope
+      acceptable_options: [accuracy of each setup, accuracy of one setup]
+      simulated_answer: Accuracy of each setup on the test split.
+      gold_sql_after_answer: select setup, avg(is_correct::int) from marts.fct_outcomes where split = 'test' and arm = 'primary' group by setup
+  - id: G-C-17
+    question: How much did it cost?
+    clarification:
+      ambiguity_type: scope
+      acceptable_options: [total cost of one setup, cost of all setups]
+      simulated_answer: Total cost of the local model on the test split.
+      gold_sql_after_answer: select sum(total_cost_usd) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-C-18
+    question: Show me the cache results.
+    clarification:
+      ambiguity_type: scope
+      acceptable_options: [cache hit rate, accuracy with the cache on vs off, cost with the cache on vs off]
+      simulated_answer: The cache hit rate of calls in the cache_on arm.
+      gold_sql_after_answer: select count(*) filter (where cache_status = 'HIT')::numeric / count(*) from marts.fct_requests where arm = 'cache_on'
+  - id: G-C-19
+    question: Compare the tenants.
+    clarification:
+      ambiguity_type: scope
+      acceptable_options: [triage accuracy per tenant, ticket volume per tenant, cost per tenant]
+      simulated_answer: The local model's test-split accuracy per tenant.
+      gold_sql_after_answer: |
+        select tenant_id, avg(is_correct::int) from marts.fct_outcomes
+        where setup = 'B_local' and split = 'test' and arm = 'primary' group by tenant_id
+  - id: G-C-20
+    question: How are the agents doing?
+    clarification:
+      ambiguity_type: scope
+      acceptable_options: [tickets resolved per agent, misroutes per agent, headcount]
+      simulated_answer: The number of distinct tickets each agent helped resolve.
+      gold_sql_after_answer: |
+        select e.agent_id, count(distinct e.ticket_id)
+        from support.ticket_events e join support.agents a on a.agent_id = e.agent_id
+        where e.event_type = 'resolved' and e.actor_type = 'agent' and a.team not like 'test-%'
+        group by e.agent_id

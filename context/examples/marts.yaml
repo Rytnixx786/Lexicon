@@ -1,0 +1,145 @@
+version: 1
+# Verified example queries for the marts. Never paraphrases of golden questions (tests/test_no_golden_leakage.py).
+examples:
+  - id: EX-001
+    question: How many test-split decisions did each setup make in the primary arm?
+    sql: select setup, count(*) as n from marts.fct_outcomes where split = 'test' and arm = 'primary' group by setup
+    tables: [marts.fct_outcomes]
+    rule_refs: [R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+  - id: EX-002
+    question: What is the TF-IDF baseline's accuracy on the test split?
+    sql: select avg(is_correct::int) as accuracy from marts.fct_outcomes where setup = 'A_tfidf' and split = 'test' and arm = 'primary'
+    tables: [marts.fct_outcomes]
+    metric_refs: [accuracy]
+    rule_refs: [R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+  - id: EX-003
+    question: Cost per correct triage of the local model, tune split versus test split.
+    sql: |
+      select split, sum(total_cost_usd) / nullif(count(*) filter (where is_correct), 0) as cost_per_correct_usd
+      from marts.fct_outcomes where setup = 'B_local' and arm = 'primary' group by split
+    tables: [marts.fct_outcomes]
+    metric_refs: [cost_per_correct]
+    rule_refs: [R-CPC-RATIO, R-PRIMARY-ARM]
+  - id: EX-004
+    question: Accuracy of each setup by tenant on the test split.
+    sql: |
+      select setup, tenant_id, avg(is_correct::int) as accuracy
+      from marts.fct_outcomes where split = 'test' and arm = 'primary' group by setup, tenant_id
+    tables: [marts.fct_outcomes]
+    metric_refs: [accuracy]
+  - id: EX-005
+    question: Which intents does the local model get wrong most often on the test split?
+    sql: |
+      select gold_label, count(*) filter (where not is_correct) as wrong, count(*) as n
+      from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+      group by gold_label order by wrong desc limit 5
+    tables: [marts.fct_outcomes]
+  - id: EX-006
+    question: How many test decisions did the local model label with each predicted intent when it was wrong?
+    sql: |
+      select predicted_label, count(*) from marts.fct_outcomes
+      where setup = 'B_local' and split = 'test' and arm = 'primary' and not is_correct group by predicted_label
+    tables: [marts.fct_outcomes]
+  - id: EX-007
+    question: 95th percentile decision latency per setup on the test split.
+    sql: |
+      select setup, percentile_cont(0.95) within group (order by total_latency_ms) as p95_ms
+      from marts.fct_outcomes where split = 'test' and arm = 'primary' group by setup
+    tables: [marts.fct_outcomes]
+  - id: EX-008
+    question: Local model accuracy on tickets with colloquial language (flag Q) on the tune split.
+    sql: |
+      select avg(is_correct::int) from marts.fct_outcomes
+      where setup = 'B_local' and split = 'tune' and arm = 'primary' and flags like '%Q%'
+    tables: [marts.fct_outcomes]
+  - id: EX-009
+    question: How did the zero-shot prompt do on the tune split?
+    sql: |
+      select avg(is_correct::int) as accuracy from marts.fct_outcomes
+      where setup = 'B_local' and split = 'tune' and prompt_version = 'ticket_triage.zero_shot.v1'
+    tables: [marts.fct_outcomes]
+    metric_refs: [accuracy]
+  - id: EX-010
+    question: Accuracy of the local model with the semantic cache switched on, test split.
+    sql: select avg(is_correct::int) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'cache_on'
+    tables: [marts.fct_outcomes]
+  - id: EX-011
+    question: Total number of model calls per provider.
+    sql: select provider, count(*) from marts.fct_requests group by provider
+    tables: [marts.fct_requests]
+  - id: EX-012
+    question: Average input tokens per local-model call on the tune split in the primary arm.
+    sql: select avg(input_tokens) from marts.fct_requests where setup = 'B_local' and split = 'tune' and arm = 'primary'
+    tables: [marts.fct_requests]
+  - id: EX-013
+    question: Total cost of all local-model calls on the tune split, primary arm.
+    sql: select sum(cost_usd) from marts.fct_requests where setup = 'B_local' and split = 'tune' and arm = 'primary'
+    tables: [marts.fct_requests]
+    rule_refs: [R-BILLED-NOT-COST]
+  - id: EX-014
+    question: How much more did Cinch's ledger bill than Tally's cost model for local calls on the tune split?
+    sql: |
+      select sum(billed_usd) - sum(cost_usd) as billed_minus_cost
+      from marts.fct_requests where setup = 'B_local' and split = 'tune' and arm = 'primary'
+    tables: [marts.fct_requests]
+    rule_refs: [R-BILLED-NOT-COST]
+  - id: EX-015
+    question: Cache status breakdown of calls in the cache_on arm.
+    sql: select cache_status, count(*) from marts.fct_requests where arm = 'cache_on' group by cache_status
+    tables: [marts.fct_requests]
+  - id: EX-016
+    question: Average latency of cache hits versus cache misses in the cache_on arm.
+    sql: select cache_status, avg(latency_ms) from marts.fct_requests where arm = 'cache_on' group by cache_status
+    tables: [marts.fct_requests]
+  - id: EX-017
+    question: Local-model accuracy per tenant display name on the tune split.
+    sql: |
+      select d.display_name, avg(o.is_correct::int) from marts.fct_outcomes o
+      join marts.dim_tenant d on d.tenant_id = o.tenant_id
+      where o.setup = 'B_local' and o.split = 'tune' and o.arm = 'primary' group by d.display_name
+    tables: [marts.fct_outcomes, marts.dim_tenant]
+  - id: EX-018
+    question: Total triage cost per tenant compared with its monthly budget, test split, local model.
+    sql: |
+      select d.tenant_id, d.monthly_budget_usd, sum(o.total_cost_usd) as cost_usd
+      from marts.fct_outcomes o join marts.dim_tenant d on d.tenant_id = o.tenant_id
+      where o.setup = 'B_local' and o.split = 'test' and o.arm = 'primary'
+      group by d.tenant_id, d.monthly_budget_usd
+    tables: [marts.fct_outcomes, marts.dim_tenant]
+  - id: EX-019
+    question: For each prompt version, how many few-shot examples it has and its tune-split accuracy.
+    sql: |
+      select p.prompt_version, p.n_fewshot, avg(o.is_correct::int) as accuracy
+      from marts.fct_outcomes o join marts.dim_prompt_version p on p.prompt_version = o.prompt_version
+      where o.setup = 'B_local' and o.split = 'tune' group by p.prompt_version, p.n_fewshot
+    tables: [marts.fct_outcomes, marts.dim_prompt_version]
+  - id: EX-020
+    question: Input tokens of the final call for each correct local-model decision on the test split, averaged.
+    sql: |
+      select avg(r.input_tokens) from marts.fct_outcomes o join marts.fct_requests r on r.request_id = o.final_request_id
+      where o.setup = 'B_local' and o.split = 'test' and o.arm = 'primary' and o.is_correct
+    tables: [marts.fct_outcomes, marts.fct_requests]
+  - id: EX-021
+    question: Daily accuracy of each setup from the cost mart on the tune split (recomputed, not averaged).
+    sql: |
+      select day, setup, sum(n_correct)::numeric / sum(n_decisions) as accuracy
+      from marts.mart_cost_per_outcome where split = 'tune' and arm = 'primary' group by day, setup
+    tables: [marts.mart_cost_per_outcome]
+    rule_refs: [R-CPC-RATIO]
+  - id: EX-022
+    question: TF-IDF cost per correct triage per tenant from the cost mart, test split.
+    sql: |
+      select tenant_id, sum(total_cost_usd) / nullif(sum(n_correct), 0) from marts.mart_cost_per_outcome
+      where setup = 'A_tfidf' and split = 'test' and arm = 'primary' group by tenant_id
+    tables: [marts.mart_cost_per_outcome]
+    rule_refs: [R-CPC-RATIO]
+  - id: EX-023
+    question: List the tenants with their display names.
+    sql: select tenant_id, display_name from marts.dim_tenant
+    tables: [marts.dim_tenant]
+  - id: EX-024
+    question: Category-level accuracy of the TF-IDF baseline on the test split.
+    sql: |
+      select gold_category, avg((predicted_category = gold_category)::int) as category_accuracy
+      from marts.fct_outcomes where setup = 'A_tfidf' and split = 'test' and arm = 'primary' group by gold_category
+    tables: [marts.fct_outcomes]

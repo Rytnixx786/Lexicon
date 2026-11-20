@@ -1,0 +1,83 @@
+version: 1
+table: marts.mart_cost_per_outcome
+dbt_model: model.tally.mart_cost_per_outcome
+grain: one row per (day, run, tenant, feature, setup, model mix, prompt version, split, arm)
+primary_key:
+- day
+- run_id
+- tenant_id
+- feature
+- setup
+- model
+- prompt_version
+- split
+- arm
+description: Daily aggregate per run, tenant, setup, model mix, prompt version, split and arm. Use for dashboards.
+  For overall numbers across days, re-aggregate from fct_outcomes (ratios do not add).
+ai_context: Pre-aggregated daily rows for dashboards. Ratios here do not add up across rows; for totals across tenants
+  or days recompute from fct_outcomes.
+synonyms:
+- daily cost summary
+- cost per outcome mart
+rule_refs:
+- R-CPC-RATIO
+- R-PRIMARY-ARM
+metric_refs: []
+columns:
+- name: day
+  type: date
+  description: UTC date of the decisions.
+- name: run_id
+  type: text
+  description: Harness run id.
+- name: tenant_id
+  type: text
+  description: Tenant.
+- name: feature
+  type: text
+  description: Feature.
+- name: setup
+  type: text
+  description: Serving setup.
+- name: model
+  type: text
+  description: Model mix of the decisions.
+- name: prompt_version
+  type: text
+  description: Prompt version.
+- name: split
+  type: text
+  description: Data split.
+- name: arm
+  type: text
+  description: Experiment arm.
+- name: n_decisions
+  type: int
+  description: Decisions in the group.
+- name: n_correct
+  type: int
+  description: Correct decisions in the group.
+- name: accuracy
+  type: numeric(8, 6)
+  description: n_correct / n_decisions.
+- name: total_cost_usd
+  type: numeric(16, 10)
+  description: Total cost of the group.
+- name: cost_per_correct_usd
+  type: numeric(16, 10)
+  description: total_cost_usd / n_correct (NULL when nothing is correct).
+  rule_refs:
+  - R-CPC-RATIO
+  unit: USD
+- name: cache_hit_rate
+  type: numeric(8, 6)
+  description: Share of decisions answered from the gateway semantic cache.
+- name: escalation_rate
+  type: numeric(8, 6)
+  description: Share of decisions the cascade escalated.
+- name: p50_latency_ms
+  type: numeric(14, 3)
+  description: Median decision latency.
+- name: p95_latency_ms
+  type: numeric(14, 3)
+  description: 95th percentile decision latency.

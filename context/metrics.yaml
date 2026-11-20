@@ -1,0 +1,122 @@
+version: 1
+metrics:
+  - id: accuracy
+    label: Accuracy
+    type: ratio
+    base_table: marts.fct_outcomes
+    numerator: "count(*) filter (where is_correct)"
+    denominator: "count(*)"
+    description: Share of decisions that were correct. Report on split = 'test' and arm = 'primary' unless asked otherwise.
+    synonyms: [accuracy, hit rate, correctness, how often it is right, success rate]
+    rule_refs: [R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM, R-FAILED-IS-WRONG]
+    expected_range: [0, 1]
+  - id: cost_per_correct
+    label: Cost per correct triage
+    type: ratio
+    base_table: marts.fct_outcomes
+    numerator: "sum(total_cost_usd)"
+    denominator: "count(*) filter (where is_correct)"
+    description: Total cost divided by the number of correct decisions over the SAME set of rows. Never average per-row ratios.
+    synonyms: [cost per correct, cpc, cost per correct answer, unit cost of a right answer]
+    rule_refs: [R-CPC-RATIO, R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+    source_of_truth: "Tally docs/CONTRACTS.md section 5 rule 1 (cost_per_correct_usd = total_cost_usd / n_correct)"
+    expected_range: [0, 1]
+  - id: total_cost
+    label: Total cost
+    type: simple
+    base_table: marts.fct_outcomes
+    expr: "sum(total_cost_usd)"
+    description: Sum of Tally's cost model over decisions (GPU amortisation and power for local calls). Not the Cinch ledger charge.
+    synonyms: [spend, cost, money spent, total spend]
+    rule_refs: [R-BILLED-NOT-COST]
+    expected_range: [0, 1000]
+  - id: escalation_rate
+    label: Escalation rate (ambiguous)
+    type: ratio
+    base_table: marts.fct_outcomes
+    description: Escalation means two different things in this warehouse; ask which one.
+    synonyms: [escalation rate, how often we escalate, escalations, escalate]
+    requires_choice: true
+    choices:
+      - id: cascade_escalation_rate
+        description: Share of cascade decisions sent from the local to the hosted model (marts.fct_outcomes.escalated, setup D_cascade)
+      - id: human_escalation_rate
+        description: Share of support tickets escalated to a human (support.ticket_events.event_type = 'escalated_to_human')
+  - id: human_escalation_rate
+    label: Human escalation rate
+    type: ratio
+    base_table: support.ticket_events
+    numerator: "count(distinct ticket_id) filter (where event_type = 'escalated_to_human')"
+    denominator: "count(distinct ticket_id)"
+    description: Share of tickets escalated to a human at least once (exclude the test tenant via support.tickets).
+    synonyms: [escalated to human, human escalations]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+    expected_range: [0, 1]
+  - id: avg_latency_per_call
+    label: Average latency per model call
+    type: simple
+    base_table: marts.fct_requests
+    expr: "avg(latency_ms)"
+    description: Mean client-side latency of a single model call in milliseconds.
+    synonyms: [average latency, mean response time]
+    expected_range: [0, 600000]
+  - id: cache_hit_rate
+    label: Cache hit rate
+    type: ratio
+    base_table: marts.fct_requests
+    numerator: "count(*) filter (where cache_status = 'HIT')"
+    denominator: "count(*)"
+    description: Share of model calls answered from Cinch's semantic cache.
+    synonyms: [cache hit rate, cache hits]
+    expected_range: [0, 1]
+  - id: resolved_tickets
+    label: Resolved tickets
+    type: simple
+    base_table: support.tickets
+    expr: "count(*) filter (where status in ('resolved', 'closed'))"
+    description: Tickets currently resolved or closed. Reopened tickets that are not re-resolved do not count; never count 'resolved' events.
+    synonyms: [resolved, solved tickets, tickets closed out]
+    rule_refs: [R-RESOLVED-IS-STATUS, R-EXCLUDE-TEST-TENANTS]
+    expected_range: [0, 100000]
+  - id: misroute_rate
+    label: Misroute rate
+    type: ratio
+    base_table: support.tickets
+    numerator: "count(*) filter (where ai_predicted_intent is distinct from final_intent)"
+    denominator: "count(*)"
+    description: Share of tickets whose AI-predicted intent differs from the final intent (an invalid prediction counts as a misroute).
+    synonyms: [misroutes, wrong routing, misrouting]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+    expected_range: [0, 1]
+  - id: reopen_rate
+    label: Reopen rate
+    type: ratio
+    base_table: support.ticket_events
+    numerator: "count(distinct ticket_id) filter (where event_type = 'reopened')"
+    denominator: "count(distinct ticket_id) filter (where event_type = 'resolved')"
+    description: Share of resolved-at-least-once tickets that a customer reopened.
+    synonyms: [reopen rate, reopens]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+    expected_range: [0, 1]
+  - id: sla_breach_rate
+    label: SLA breach rate
+    type: ratio
+    base_table: support.tickets
+    numerator: "count of tickets whose first 'resolved' event_at - opened_at > resolution_hours"
+    denominator: "count of tickets with at least one 'resolved' event"
+    description: Share of resolved tickets whose first resolution came later than the tenant and priority resolution_hours target.
+    synonyms: [SLA breaches, missed SLA, late tickets, breach rate]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+    expected_range: [0, 1]
+  - id: resolution_time
+    label: Resolution time (ambiguous)
+    type: simple
+    base_table: support.ticket_events
+    description: Resolution time can mean time to the first resolution or to the final one after reopens; ask which.
+    synonyms: [resolution time, time to resolve, how long tickets take]
+    requires_choice: true
+    choices:
+      - id: time_to_first_resolution
+        description: Opening to the first 'resolved' event
+      - id: time_to_final_resolution
+        description: Opening to the last 'resolved' event (includes time spent after reopens)

@@ -1,0 +1,177 @@
+version: 1
+table: marts.fct_outcomes
+dbt_model: model.tally.fct_outcomes
+grain: 'one row per decision: one ticket triaged by one setup, in one run and experiment arm'
+primary_key:
+- decision_id
+description: 'One row per decision: one ticket triaged by one setup in one run and arm. Use this table for accuracy
+  and cost-per-correct questions. total_cost_usd already includes every call in the decision.'
+ai_context: Use for accuracy and cost-per-correct questions. Compare setups only on arm = 'primary'; headline numbers
+  use split = 'test'. total_cost_usd already includes every model call in the decision.
+synonyms:
+- outcomes
+- decisions
+- triage results
+- predictions
+rule_refs:
+- R-HEADLINE-TEST-ONLY
+- R-PRIMARY-ARM
+- R-CPC-RATIO
+- R-FAILED-IS-WRONG
+metric_refs:
+- accuracy
+- cost_per_correct
+- total_cost
+- escalation_rate
+columns:
+- name: decision_id
+  type: uuid
+  description: Unique id of the decision.
+- name: decided_at
+  type: timestamptz
+  description: When the final answer was produced.
+- name: run_id
+  type: text
+  description: Harness run id.
+- name: final_request_id
+  type: uuid
+  description: The model call whose answer was used.
+- name: ticket_id
+  type: text
+  description: Bitext row id (bx-00000 ... bx-26871).
+- name: tenant_id
+  type: text
+  description: Simulated team that owns the ticket.
+  is_enum: true
+  synonyms:
+  - team
+  - tenant
+  - customer team
+- name: feature
+  type: text
+  description: Product feature (ticket_triage).
+- name: prompt_version
+  type: text
+  description: Prompt template version ('none' for TF-IDF).
+  is_enum: true
+  synonyms:
+  - prompt
+- name: setup
+  type: text
+  description: Serving setup (A_tfidf, B_local, C_hosted, D_cascade).
+  is_enum: true
+  synonyms:
+  - approach
+  - configuration
+  - system
+  - variant
+  value_meanings:
+    A_tfidf: TF-IDF + logistic regression baseline, no LLM
+    B_local: Qwen2.5-7B local model served via Cinch
+    C_hosted: hosted API model (not run in this snapshot)
+    D_cascade: local first, escalate to hosted when unsure (not run in this snapshot)
+- name: split
+  type: text
+  description: Data split (dev, tune, test). Report headline numbers on test only.
+  is_enum: true
+  rule_refs:
+  - R-HEADLINE-TEST-ONLY
+  value_meanings:
+    tune: used to choose prompts and thresholds
+    test: sealed held-out split for reported numbers
+- name: arm
+  type: text
+  description: Experiment arm (primary, prompt_selection, cache_on).
+  is_enum: true
+  rule_refs:
+  - R-PRIMARY-ARM
+  value_meanings:
+    primary: the reported configuration
+    prompt_selection: non-chosen prompt version run on tune
+    cache_on: same model with the gateway semantic cache switched on
+- name: model_mix
+  type: text
+  description: Models used in the decision, joined with ' + ' (two models when a cascade escalated).
+- name: predicted_label
+  type: text
+  description: Intent the setup chose, or NULL if the output was invalid.
+  synonyms:
+  - predicted intent
+  - model answer
+- name: gold_label
+  type: text
+  description: Correct intent from the dataset.
+  synonyms:
+  - true intent
+  - correct intent
+  - actual intent
+- name: predicted_category
+  type: text
+  description: Category implied by the predicted intent.
+- name: gold_category
+  type: text
+  description: Correct category (ACCOUNT, ORDER, REFUND, ...).
+- name: is_correct
+  type: boolean
+  description: True when every call succeeded, the output was valid, and predicted_label = gold_label.
+  synonyms:
+  - correct
+  - right
+  - accurate
+  - hit
+- name: outcome_source
+  type: text
+  description: Where correctness comes from (gold_label for Tally's runs).
+- name: valid
+  type: boolean
+  description: Output parsed to a valid label and all calls succeeded.
+- name: escalated
+  type: boolean
+  description: The cascade sent this ticket to the hosted model.
+  synonyms:
+  - cascade escalation
+- name: any_cache_hit
+  type: boolean
+  description: At least one call in the decision was answered from the gateway semantic cache.
+  synonyms:
+  - cache hit
+  - served from cache
+- name: confidence
+  type: double precision
+  description: Raw label confidence of the first model.
+- name: calibrated_confidence
+  type: double precision
+  description: Temperature-scaled P(correct) used by the cascade (D only).
+- name: total_cost_usd
+  type: numeric(14, 10)
+  description: Sum of cost_usd over all calls in the decision.
+  synonyms:
+  - cost
+  - spend
+  - money spent
+  - price
+  unit: USD
+  expected_range:
+  - 0
+  - 0.05
+- name: total_latency_ms
+  type: numeric(14, 3)
+  description: Sum of call latencies (calls in a cascade run one after another).
+  synonyms:
+  - latency
+  - response time
+  - time taken
+  unit: ms
+  expected_range:
+  - 0
+  - 600000
+- name: n_calls
+  type: int
+  description: Number of model calls in the decision.
+- name: flags
+  type: text
+  description: Bitext language-variation tags, e.g. Z = typos, Q = colloquial, W = offensive, K = keyword-only.
+  synonyms:
+  - language variation
+  - typos
+  - colloquial

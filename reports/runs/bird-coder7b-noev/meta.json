@@ -1,0 +1,9 @@
+{
+  "run_id": "bird-coder7b-noev",
+  "model": "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ",
+  "evidence": false,
+  "n": 200,
+  "hf_revision": "5b256b5a9c17478f06ed6912612e9a14d17065c8",
+  "wall_seconds": 195.22721147537231,
+  "slice_file": "slice_ids.json"
+}

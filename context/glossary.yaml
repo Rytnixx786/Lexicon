@@ -1,0 +1,15 @@
+version: 1
+# Cross-table synonym expansion applied to the question before retrieval.
+terms:
+  cost_usd: [cost, spend, spent, money, price, expense, expensive, cheap]
+  billed_usd: [billed, charged, charge, ledger, chargeback]
+  is_correct: [correct, right, accurate, accuracy, wrong, mistakes, errors]
+  latency_ms: [latency, slow, fast, response time, quick]
+  tenant_id: [team, tenant, department, group]
+  setup: [setup, approach, configuration, system, baseline, local model, cascade, hosted model, tfidf, qwen, llm]
+  ticket_events: [reopened, reopen, escalated, history, lifecycle, timeline, event, events]
+  agents: [agent, agents, staff, people, headcount, employee, employees, hire, hired]
+  sla_policies: [sla, target, service level, breach, breached, late, overdue]
+  prompt_version: [prompt, prompts, few-shot, zero-shot, fewshot]
+  cache_status: [cache, cached, semantic cache]
+  tickets: [ticket, tickets, case, cases, customers wrote, channel, priority]

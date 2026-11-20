@@ -1,0 +1,197 @@
+{
+ "items": {
+  "EX-001": {
+   "hash": "sha256:8487a613bbcecf0eecafd6c2",
+   "rows": 2
+  },
+  "EX-002": {
+   "hash": "sha256:f653aeefb505f11f76a72821",
+   "rows": 1
+  },
+  "EX-003": {
+   "hash": "sha256:0fd0102fa56e786461852820",
+   "rows": 2
+  },
+  "EX-004": {
+   "hash": "sha256:4410f1288caff88d9787e98e",
+   "rows": 6
+  },
+  "EX-005": {
+   "hash": "sha256:71dbcd519c5b9d457ec3dd5f",
+   "rows": 5
+  },
+  "EX-006": {
+   "hash": "sha256:e509cd4b81064c46ee94f809",
+   "rows": 20
+  },
+  "EX-007": {
+   "hash": "sha256:42f2f58d245c0a4b06e6dd09",
+   "rows": 2
+  },
+  "EX-008": {
+   "hash": "sha256:f4a4f262d9edb3519b774434",
+   "rows": 1
+  },
+  "EX-009": {
+   "hash": "sha256:41544683cabe0b556ba09c4a",
+   "rows": 1
+  },
+  "EX-010": {
+   "hash": "sha256:213c07dfecc7587f846db4da",
+   "rows": 1
+  },
+  "EX-011": {
+   "hash": "sha256:74632896ad946d1b4adf3f31",
+   "rows": 2
+  },
+  "EX-012": {
+   "hash": "sha256:8c494d22dbb9d4e28f7ae4e5",
+   "rows": 1
+  },
+  "EX-013": {
+   "hash": "sha256:5e51a93be27d6ff694f178d4",
+   "rows": 1
+  },
+  "EX-014": {
+   "hash": "sha256:b8c620b9d4d80c737cf35169",
+   "rows": 1
+  },
+  "EX-015": {
+   "hash": "sha256:af6dfade725a83ed408344d6",
+   "rows": 2
+  },
+  "EX-016": {
+   "hash": "sha256:d49bd69c1b61b30e39f96909",
+   "rows": 2
+  },
+  "EX-017": {
+   "hash": "sha256:fbe67d4f1238c289d6c38efc",
+   "rows": 3
+  },
+  "EX-018": {
+   "hash": "sha256:6d64d4aef7a7c63a92750d6f",
+   "rows": 3
+  },
+  "EX-019": {
+   "hash": "sha256:7c609cdf7f199bce7624b2c6",
+   "rows": 2
+  },
+  "EX-020": {
+   "hash": "sha256:95bc036523fa775c12876512",
+   "rows": 1
+  },
+  "EX-021": {
+   "hash": "sha256:e407dd1ad2024586e6649a97",
+   "rows": 2
+  },
+  "EX-022": {
+   "hash": "sha256:e71d4a8d71a46d25f375c39a",
+   "rows": 3
+  },
+  "EX-023": {
+   "hash": "sha256:969ab77afd747d9e96c1b190",
+   "rows": 3
+  },
+  "EX-024": {
+   "hash": "sha256:a4d3b08141f4138d0f363032",
+   "rows": 11
+  },
+  "EX-101": {
+   "hash": "sha256:3e9124c049561885a3ebbf86",
+   "rows": 3
+  },
+  "EX-102": {
+   "hash": "sha256:e435739aff87daa1f62b3a8a",
+   "rows": 3
+  },
+  "EX-103": {
+   "hash": "sha256:f6845cb87e1f2c79e3d24298",
+   "rows": 3
+  },
+  "EX-104": {
+   "hash": "sha256:2e346d732e25a855235786cf",
+   "rows": 1
+  },
+  "EX-105": {
+   "hash": "sha256:ef311ab5e7a8ee711572fae6",
+   "rows": 5
+  },
+  "EX-106": {
+   "hash": "sha256:f593e97e528642f1e9d18a09",
+   "rows": 12
+  },
+  "EX-107": {
+   "hash": "sha256:3a22ca6c4aa3a9f95e51b7e2",
+   "rows": 1
+  },
+  "EX-108": {
+   "hash": "sha256:030585a868db3b5145123df5",
+   "rows": 3
+  },
+  "EX-109": {
+   "hash": "sha256:87f75ba2b44315d046e38c15",
+   "rows": 1
+  },
+  "EX-110": {
+   "hash": "sha256:cee840f32d262bb02464d65a",
+   "rows": 1
+  },
+  "EX-111": {
+   "hash": "sha256:122fa1cbac3afa47a89cb1e8",
+   "rows": 3
+  },
+  "EX-112": {
+   "hash": "sha256:7db42bd7dc90aeaf5e998212",
+   "rows": 7
+  },
+  "EX-113": {
+   "hash": "sha256:fcb5a036883037f3c40fcf76",
+   "rows": 3
+  },
+  "EX-114": {
+   "hash": "sha256:070c03dd177dde9b853c3088",
+   "rows": 3
+  },
+  "EX-115": {
+   "hash": "sha256:a5a5e5921bc4c54bd80dc070",
+   "rows": 1
+  },
+  "EX-116": {
+   "hash": "sha256:aa93fa16394eafd2f8393b08",
+   "rows": 13
+  },
+  "EX-117": {
+   "hash": "sha256:edb9c4725ee3a405b05feea1",
+   "rows": 7
+  },
+  "EX-118": {
+   "hash": "sha256:fd7aa129a2d639031c61c043",
+   "rows": 3
+  },
+  "EX-119": {
+   "hash": "sha256:d3ce6760a0ec756df4629b7b",
+   "rows": 1
+  },
+  "EX-120": {
+   "hash": "sha256:fcd5374a506fda154bc75cdc",
+   "rows": 1
+  },
+  "EX-121": {
+   "hash": "sha256:cf80ad1ac3417bfedffcbdfe",
+   "rows": 1
+  },
+  "EX-122": {
+   "hash": "sha256:20b6256da0672a70f209f307",
+   "rows": 1
+  },
+  "EX-123": {
+   "hash": "sha256:e05de7e2eb20c7e4a6550744",
+   "rows": 8
+  },
+  "EX-124": {
+   "hash": "sha256:27be9f37a25e359eca70f78a",
+   "rows": 3
+  }
+ },
+ "verified_at": "2026-11-20"
+}

@@ -1,0 +1,62 @@
+bucket: simple
+items:
+  - id: G-S-01
+    question: How many decisions did the B_local setup make on the test split in the primary arm?
+    gold_sql: select count(*) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-S-02
+    question: How many tenants are defined in the warehouse?
+    gold_sql: select count(*) from marts.dim_tenant
+  - id: G-S-03
+    question: What is the monthly budget of the billing tenant?
+    gold_sql: select monthly_budget_usd from marts.dim_tenant where tenant_id = 'billing'
+  - id: G-S-04
+    question: List every prompt version with its number of few-shot examples per intent.
+    gold_sql: select prompt_version, n_fewshot from marts.dim_prompt_version
+  - id: G-S-05
+    question: How many model calls were answered from the semantic cache (cache status HIT)?
+    gold_sql: select count(*) from marts.fct_requests where cache_status = 'HIT'
+  - id: G-S-06
+    question: What is the largest input token count of any single model call?
+    gold_sql: select max(input_tokens) from marts.fct_requests
+  - id: G-S-07
+    question: How many tickets of the support tenant have high priority?
+    gold_sql: select count(*) from support.tickets where tenant_id = 'support' and priority = 'high'
+  - id: G-S-08
+    question: How many agents, active or not, belong to the billing team?
+    gold_sql: select count(*) from support.agents where team = 'billing'
+  - id: G-S-09
+    question: What is the resolution-hours target for high-priority tickets of the sales tenant?
+    gold_sql: select resolution_hours from support.sla_policies where tenant_id = 'sales' and priority = 'high'
+  - id: G-S-10
+    question: How many decisions did the TF-IDF baseline make on the tune split?
+    gold_sql: select count(*) from marts.fct_outcomes where setup = 'A_tfidf' and split = 'tune'
+  - id: G-S-11
+    question: What was the average latency in milliseconds of vllm calls on the test split in the primary arm?
+    gold_sql: select avg(latency_ms) from marts.fct_requests where provider = 'vllm' and split = 'test' and arm = 'primary'
+  - id: G-S-12
+    question: How many distinct gold intents appear in the test split?
+    gold_sql: select count(distinct gold_label) from marts.fct_outcomes where split = 'test'
+  - id: G-S-13
+    question: How many billing-tenant tickets were opened through the chat channel?
+    gold_sql: select count(*) from support.tickets where tenant_id = 'billing' and channel = 'chat'
+  - id: G-S-14
+    question: How many output tokens did the B_local setup produce on the test split in the primary arm?
+    gold_sql: select sum(output_tokens) from marts.fct_requests where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-S-15
+    question: Which tenant has the largest monthly budget?
+    gold_sql: select tenant_id from marts.dim_tenant order by monthly_budget_usd desc limit 1
+  - id: G-S-16
+    question: How many tickets of the support tenant are currently open?
+    gold_sql: select count(*) from support.tickets where tenant_id = 'support' and status = 'open'
+  - id: G-S-17
+    question: When was the earliest sales-tenant ticket opened?
+    gold_sql: select min(opened_at) from support.tickets where tenant_id = 'sales'
+  - id: G-S-18
+    question: How many model calls returned an HTTP status other than 200?
+    gold_sql: select count(*) from marts.fct_requests where http_status <> 200
+  - id: G-S-19
+    question: How many agents have an hourly cost above 6 USD?
+    gold_sql: select count(*) from support.agents where hourly_cost_usd > 6
+  - id: G-S-20
+    question: For B_local on the test split in the primary arm, how many decisions had an invalid output?
+    gold_sql: select count(*) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary' and not valid

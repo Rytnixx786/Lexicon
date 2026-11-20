@@ -1,0 +1,19 @@
+version: 1
+table: support.agents
+synthetic: true
+grain: one row per support agent
+primary_key: [agent_id]
+description: Synthetic roster of support agents by team, with hourly cost.
+ai_context: >-
+  Use for headcount, team and labour-cost questions. Current headcount counts only is_active agents and excludes the
+  load-test bot (team 'test-loadgen'). The email column is personal data and must never be selected.
+synonyms: [agents, staff, support staff, people, employees]
+rule_refs: [R-NO-PII, R-EXCLUDE-TEST-TENANTS, R-ACTIVE-HEADCOUNT]
+columns:
+  - {name: agent_id, type: text, description: "Agent id."}
+  - {name: display_name, type: text, description: "Agent display name.", synonyms: [name]}
+  - {name: team, type: text, description: "Team the agent works in; matches tenant_id.", is_enum: true, synonyms: [tenant, department]}
+  - {name: email, type: text, description: "Work email address. Personal data: never select or reveal it.", pii: true, rule_refs: [R-NO-PII]}
+  - {name: hourly_cost_usd, type: "numeric(8,2)", description: "Fully loaded hourly cost of the agent.", unit: USD, synonyms: [wage, salary per hour, rate]}
+  - {name: is_active, type: boolean, description: "Currently employed.", rule_refs: [R-ACTIVE-HEADCOUNT]}
+  - {name: hired_on, type: date, description: "Hire date.", synonyms: [start date, joined]}

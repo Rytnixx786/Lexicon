@@ -1,0 +1,4 @@
+The user's question is ambiguous for a SQL analyst over the warehouse below. List 2 to 4 distinct, concrete
+interpretations that would lead to different answers. One per line, no numbering, at most 15 words each.
+
+{context}

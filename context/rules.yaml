@@ -1,0 +1,39 @@
+version: 1
+rules:
+  - id: R-HEADLINE-TEST-ONLY
+    statement: Accuracy and cost numbers about the setups use split = 'test' unless the user names another split.
+    applies_to: [marts.fct_outcomes, marts.fct_requests, marts.mart_cost_per_outcome]
+    sql_hint: "where split = 'test'"
+  - id: R-PRIMARY-ARM
+    statement: Compare setups only on arm = 'primary'. 'prompt_selection' and 'cache_on' are experiment arms and are excluded unless the question is about them.
+    applies_to: [marts.fct_outcomes, marts.fct_requests, marts.mart_cost_per_outcome]
+    sql_hint: "where arm = 'primary'"
+  - id: R-CPC-RATIO
+    statement: Cost per correct is sum(cost) / count(correct) over the same rows. Never average a per-row or per-day ratio.
+    applies_to: [marts.fct_outcomes, marts.mart_cost_per_outcome]
+    sql_hint: "sum(total_cost_usd) / nullif(count(*) filter (where is_correct), 0)"
+  - id: R-FAILED-IS-WRONG
+    statement: Decisions with a failed or invalid call already have is_correct = false; count them as wrong, never drop them.
+    applies_to: [marts.fct_outcomes]
+  - id: R-BILLED-NOT-COST
+    statement: billed_usd is what Cinch's ledger charged (hosted-style list rates). Cost, spend and price mean cost_usd or total_cost_usd unless the user explicitly asks about billing or charges.
+    applies_to: [marts.fct_requests]
+  - id: R-EXCLUDE-TEST-TENANTS
+    statement: Exclude the load-test tenant 'test-loadgen' (any tenant_id or team starting with 'test-') from all business reporting.
+    applies_to: [support.tickets, support.ticket_events, support.agents, support.sla_policies]
+    sql_hint: "tenant_id not like 'test-%' (for events join support.tickets; for agents use team not like 'test-%')"
+  - id: R-RESOLVED-IS-STATUS
+    statement: A ticket is resolved only if its status is 'resolved' or 'closed'. Never count 'resolved' events; reopened tickets can have several, and a ticket reopened after its last resolution is not resolved.
+    applies_to: [support.tickets, support.ticket_events]
+    sql_hint: "count(*) from support.tickets where status in ('resolved', 'closed')"
+  - id: R-AGENT-WORK-IS-AGENT-EVENTS
+    statement: Agent workload and productivity count only events with actor_type = 'agent'. Bot-resolved tickets are not agent work.
+    applies_to: [support.ticket_events]
+    sql_hint: "where actor_type = 'agent'"
+  - id: R-ACTIVE-HEADCOUNT
+    statement: Current headcount counts only agents with is_active = true and excludes the load-test bot (team 'test-loadgen').
+    applies_to: [support.agents]
+    sql_hint: "where is_active and team not like 'test-%'"
+  - id: R-NO-PII
+    statement: Agent email addresses are personal data. Never select, list or reveal them; refuse such requests.
+    applies_to: [support.agents]

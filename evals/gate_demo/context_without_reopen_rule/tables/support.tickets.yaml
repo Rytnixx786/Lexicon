@@ -1,0 +1,27 @@
+version: 1
+table: support.tickets
+synthetic: true
+grain: one row per support ticket
+primary_key: [ticket_id]
+description: >-
+  Synthetic ticket lifecycle (seeded generator, Lexicon ADR-005) for the Bitext test-split tickets triaged by the
+  local model, plus 300 load-test tickets. Links to the AI triage decision through decision_id.
+ai_context: >-
+  Use for ticket volume, status, resolution and SLA questions. Exclude tenant 'test-loadgen' from business reporting.
+  A ticket counts as resolved only when its status is 'resolved' or 'closed'; never count 'resolved' events.
+synonyms: [tickets, support tickets, cases, requests from customers]
+rule_refs: [R-EXCLUDE-TEST-TENANTS]
+metric_refs: [resolved_tickets, misroute_rate]
+columns:
+  - {name: ticket_id, type: text, description: "Ticket id; equals the Bitext ticket id (bx-NNNNN) or lt-NNNN for load tests."}
+  - {name: tenant_id, type: text, description: "Team that owns the ticket.", is_enum: true, synonyms: [team, tenant], rule_refs: [R-EXCLUDE-TEST-TENANTS],
+     value_meanings: {test-loadgen: "synthetic load-test traffic; exclude from business reporting"}}
+  - {name: decision_id, type: uuid, description: "The AI triage decision in marts.fct_outcomes (B_local, test split, primary arm); NULL for load tests."}
+  - {name: channel, type: text, description: "Where the customer wrote in.", is_enum: true}
+  - {name: priority, type: text, description: "Ticket priority.", is_enum: true, synonyms: [urgency, severity]}
+  - {name: opened_at, type: timestamptz, description: "When the customer opened the ticket.", synonyms: [created, submitted, received]}
+  - {name: assigned_agent_id, type: text, description: "Human agent assigned; NULL when a bot resolved the ticket without an agent.", synonyms: [owner, assignee]}
+  - {name: status, type: text, description: "Current status. 'resolved' and 'closed' count as resolved; 'open' includes tickets reopened and not yet re-resolved.", is_enum: true,
+     rule_refs: []}
+  - {name: ai_predicted_intent, type: text, description: "Intent the local model predicted at triage; NULL if its output was invalid.", synonyms: [predicted intent, ai label]}
+  - {name: final_intent, type: text, description: "The ticket's true intent (gold label).", synonyms: [true intent, actual intent, category of request]}

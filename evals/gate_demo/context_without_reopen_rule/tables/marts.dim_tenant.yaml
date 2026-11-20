@@ -1,0 +1,34 @@
+version: 1
+table: marts.dim_tenant
+dbt_model: model.tally.dim_tenant
+grain: one row per tenant (team)
+primary_key:
+- tenant_id
+description: Simulated tenants (teams) and the category mix each one sends.
+ai_context: Join to facts on tenant_id for team names and budgets.
+synonyms:
+- tenants
+- teams
+rule_refs: []
+metric_refs: []
+columns:
+- name: tenant_id
+  type: text
+  description: Tenant slug.
+- name: display_name
+  type: text
+  description: Human-readable team name.
+  synonyms:
+  - team name
+- name: owner_project
+  type: text
+  description: Project that owns the tenant's traffic.
+- name: monthly_budget_usd
+  type: numeric(12, 2)
+  description: Monthly AI budget configured for the tenant.
+  synonyms:
+  - budget
+  unit: USD
+- name: traffic_mix
+  type: jsonb
+  description: Category weights used to assign tickets to this tenant.

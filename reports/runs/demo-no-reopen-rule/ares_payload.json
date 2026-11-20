@@ -1,0 +1,47 @@
+{
+  "context_fingerprint": "4411b79b0fc7d1fd",
+  "golden_version": "golden-e73a9435333b",
+  "level": "L3",
+  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+  "model_name": "lexicon-sql-agent",
+  "n_samples": 120,
+  "new_metrics": {
+    "false_clarify_rate": 0.1,
+    "over_refusal_rate": 0.03,
+    "overall_accuracy": 0.4125,
+    "task_success": 0.43333333333333335
+  },
+  "runs": [
+    "demo-no-reopen-rule",
+    "demo-no-reopen-rule-s1",
+    "demo-no-reopen-rule-s2"
+  ],
+  "seed_flip_rate": 0.008333333333333333,
+  "slice_metrics": {
+    "business_rule_trap": {
+      "is_critical": false,
+      "score": 0.4
+    },
+    "metric_definition": {
+      "is_critical": false,
+      "score": 0.15
+    },
+    "multi_join": {
+      "is_critical": false,
+      "score": 0.45
+    },
+    "should_clarify": {
+      "is_critical": true,
+      "score": 0.2
+    },
+    "should_refuse": {
+      "is_critical": true,
+      "score": 0.75
+    },
+    "simple": {
+      "is_critical": false,
+      "score": 0.65
+    }
+  },
+  "snapshot_sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df"
+}

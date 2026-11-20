@@ -1,0 +1,75 @@
+# ARES gate (BUILD_SPEC §11.5). Runs on PRs that change context, prompts or agent nodes. CI has no GPU, so the
+# eval replays recorded responses (ADR-010): a context or prompt change that alters a request needs its new
+# responses recorded locally first (`lexicon eval ... --concurrency 4` in auto mode) and committed with the PR.
+name: ares-gate
+on:
+  pull_request:
+    paths: ["context/**", "prompts/**", "src/lexicon/graph.py", "src/lexicon/retrieval.py", "src/lexicon/sql_guard.py"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_DB: lexicon_eval, POSTGRES_USER: lexicon_admin, POSTGRES_PASSWORD: lexicon_admin_local }
+        ports: ["5433:5432"]
+        options: --health-cmd "pg_isready -U lexicon_admin" --health-interval 5s --health-retries 20
+    env:
+      LEXICON_MODE: replay
+      LEXICON_NO_EMBEDDINGS: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: { repository: Rytnixx786/Ares, path: ares }
+      - uses: astral-sh/setup-uv@v5
+        with: { python-version: "3.12" }
+      - run: uv sync --all-extras
+      - run: PGPASSWORD=lexicon_admin_local psql -h localhost -p 5433 -U lexicon_admin -d lexicon_eval -f deploy/postgres/init/01_roles.sql
+      - run: uv run lexicon snapshot
+      - run: uv run lexicon golden-verify && uv run lexicon context check && uv run lexicon context verify
+      - run: |
+          for s in 0 1 2; do uv run lexicon eval --model qwen7b --level L3 --seed $s --run-id ci-L3-s$s --concurrency 4; done
+      - id: gate
+        continue-on-error: true
+        run: ARES_PATH=$GITHUB_WORKSPACE/ares uv run lexicon gate ci-L3-s0,ci-L3-s1,ci-L3-s2
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: gate-verdict, path: reports/runs/ci-L3-s0/gate_verdict.json }
+      - if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const p = 'reports/runs/ci-L3-s0/gate_verdict.json';
+            if (!fs.existsSync(p)) return;
+            const v = JSON.parse(fs.readFileSync(p, 'utf8'));
+            const d = v.deltas || {};
+            const slices = (v.payload && v.payload.slice_metrics) || {};
+            const fmt = (x) => (x === undefined ? 'n/a' : `${(100 * x).toFixed(1)}%`);
+            const fmtd = (x) => (x === undefined ? 'n/a' : `${x >= 0 ? '+' : ''}${(100 * x).toFixed(1)} pts`);
+            const rows = Object.entries(slices).map(([k, s]) => `| \`${k}\` | ${fmt(s.score)} | ${s.is_critical ? 'yes' : 'no'} |`).join('\n');
+            const body = [
+              `## ARES Gate Verdict: **${v.verdict}**`,
+              '',
+              `- **Reason:** ${v.reason}`,
+              `- **Plugin:** \`${v.plugin}\` (ARES runtime: \`${v.ares_runtime}\`)`,
+              `- **Seed flip rate:** ${fmt(v.payload && v.payload.seed_flip_rate)}`,
+              `- **EX delta:** ${fmtd(d.overall_accuracy)} · **should_refuse delta:** ${fmtd(d.should_refuse)} · **should_clarify delta:** ${fmtd(d.should_clarify)}`,
+              '',
+              '| Bucket | Candidate score | Protected |',
+              '|---|---|---|',
+              rows,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+      - if: steps.gate.outcome == 'failure'
+        run: exit 1

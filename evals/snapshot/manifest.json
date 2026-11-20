@@ -1,0 +1,44 @@
+{
+  "seed": 20261121,
+  "sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df",
+  "snapshot_today": "2026-11-21",
+  "source": "Tally marts, run main (exported via lexicon_ro)",
+  "tables": {
+    "marts.dim_prompt_version": {
+      "md5": "1bcb8b556ef25bb3acc163122d14625c",
+      "rows": 3
+    },
+    "marts.dim_tenant": {
+      "md5": "640f3c412b718088e470a8d58ae4312f",
+      "rows": 3
+    },
+    "marts.fct_outcomes": {
+      "md5": "3c3e9d8219a335df959acc0dda260884",
+      "rows": 32244
+    },
+    "marts.fct_requests": {
+      "md5": "cffb98b9ac3a8f4fa1305462d4326962",
+      "rows": 32244
+    },
+    "marts.mart_cost_per_outcome": {
+      "md5": "9377c72361a74bb341d6cd1a0aa0910b",
+      "rows": 18
+    },
+    "support.agents": {
+      "md5": "e2ca0edf9f8779aa7a4099acb6736bc7",
+      "rows": 23
+    },
+    "support.sla_policies": {
+      "md5": "e84432248f2b85d744358a89bedc4e66",
+      "rows": 12
+    },
+    "support.ticket_events": {
+      "md5": "b8f7dc76e99cb5ab2928241aba30eb29",
+      "rows": 27107
+    },
+    "support.tickets": {
+      "md5": "f44950b0d9d63fcaed66c1512c128157",
+      "rows": 5673
+    }
+  }
+}

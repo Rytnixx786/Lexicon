@@ -1,0 +1,23 @@
+{
+  "concurrency": 4,
+  "context_dir": null,
+  "context_fingerprint": "8fa1c9ba3ef79f23",
+  "deterministic_triggers": true,
+  "embeddings": true,
+  "golden_version": "golden-e73a9435333b",
+  "hardware": {
+    "concurrency": 4,
+    "mean_power_w": 117.95248554913294,
+    "n_live_calls": 262,
+    "wall_seconds": 541.9796702861786
+  },
+  "level": "L2",
+  "model": "Qwen/Qwen2.5-Coder-7B-Instruct-AWQ",
+  "n_calls": 272,
+  "n_items": 120,
+  "n_live_calls": 262,
+  "run_id": "coder7b-L2",
+  "seed": 0,
+  "snapshot_sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df",
+  "wall_seconds": 541.9796702861786
+}

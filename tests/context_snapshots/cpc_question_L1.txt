@@ -1,0 +1,96 @@
+All tables in the warehouse: marts.dim_prompt_version, marts.dim_tenant, marts.fct_outcomes, marts.fct_requests, marts.mart_cost_per_outcome, support.agents, support.sla_policies, support.ticket_events, support.tickets
+
+TABLE marts.fct_outcomes: One row per decision: one ticket triaged by one setup in one run and arm. Use this table for accuracy and cost-per-correct questions. total_cost_usd already includes every call in the decision.
+  grain: one row per decision: one ticket triaged by one setup, in one run and experiment arm
+  also called: outcomes, decisions, triage results, predictions
+  - decision_id (uuid): Unique id of the decision.
+  - decided_at (timestamptz): When the final answer was produced.
+  - run_id (text): Harness run id.
+  - final_request_id (uuid): The model call whose answer was used.
+  - ticket_id (text): Bitext row id (bx-00000 ... bx-26871).
+  - tenant_id (text): Simulated team that owns the ticket. | synonyms: team, tenant, customer team | values: support, sales, billing
+  - feature (text): Product feature (ticket_triage).
+  - prompt_version (text): Prompt template version ('none' for TF-IDF). | synonyms: prompt | values: ticket_triage.fewshot_static.v3, none, ticket_triage.zero_shot.v1
+  - setup (text): Serving setup (A_tfidf, B_local, C_hosted, D_cascade). | synonyms: approach, configuration, system, variant | values: A_tfidf = TF-IDF + logistic regression baseline, no LLM; B_local = Qwen2.5-7B local model served via Cinch; C_hosted = hosted API model (not run in this snapshot); D_cascade = local first, escalate to hosted when unsure (not run in this snapshot)
+  - split (text): Data split (dev, tune, test). Report headline numbers on test only. | values: tune = used to choose prompts and thresholds; test = sealed held-out split for reported numbers
+  - arm (text): Experiment arm (primary, prompt_selection, cache_on). | values: primary = the reported configuration; prompt_selection = non-chosen prompt version run on tune; cache_on = same model with the gateway semantic cache switched on
+  - model_mix (text): Models used in the decision, joined with ' + ' (two models when a cascade escalated).
+  - predicted_label (text): Intent the setup chose, or NULL if the output was invalid. | synonyms: predicted intent, model answer
+  - gold_label (text): Correct intent from the dataset. | synonyms: true intent, correct intent, actual intent
+  - predicted_category (text): Category implied by the predicted intent.
+  - gold_category (text): Correct category (ACCOUNT, ORDER, REFUND, ...).
+  - is_correct (boolean): True when every call succeeded, the output was valid, and predicted_label = gold_label. | synonyms: correct, right, accurate, hit
+  - outcome_source (text): Where correctness comes from (gold_label for Tally's runs).
+  - valid (boolean): Output parsed to a valid label and all calls succeeded.
+  - escalated (boolean): The cascade sent this ticket to the hosted model. | synonyms: cascade escalation
+  - any_cache_hit (boolean): At least one call in the decision was answered from the gateway semantic cache. | synonyms: cache hit, served from cache
+  - confidence (double precision): Raw label confidence of the first model.
+  - calibrated_confidence (double precision): Temperature-scaled P(correct) used by the cascade (D only).
+  - total_cost_usd (numeric(14, 10)): Sum of cost_usd over all calls in the decision. | synonyms: cost, spend, money spent, price | unit: USD
+  - total_latency_ms (numeric(14, 3)): Sum of call latencies (calls in a cascade run one after another). | synonyms: latency, response time, time taken | unit: ms
+  - n_calls (int): Number of model calls in the decision.
+  - flags (text): Bitext language-variation tags, e.g. Z = typos, Q = colloquial, W = offensive, K = keyword-only. | synonyms: language variation, typos, colloquial
+
+TABLE marts.mart_cost_per_outcome: Daily aggregate per run, tenant, setup, model mix, prompt version, split and arm. Use for dashboards. For overall numbers across days, re-aggregate from fct_outcomes (ratios do not add).
+  grain: one row per (day, run, tenant, feature, setup, model mix, prompt version, split, arm)
+  also called: daily cost summary, cost per outcome mart
+  - day (date): UTC date of the decisions.
+  - run_id (text): Harness run id.
+  - tenant_id (text): Tenant.
+  - feature (text): Feature.
+  - setup (text): Serving setup.
+  - model (text): Model mix of the decisions.
+  - prompt_version (text): Prompt version.
+  - split (text): Data split.
+  - arm (text): Experiment arm.
+  - n_decisions (int): Decisions in the group.
+  - n_correct (int): Correct decisions in the group.
+  - accuracy (numeric(8, 6)): n_correct / n_decisions.
+  - total_cost_usd (numeric(16, 10)): Total cost of the group.
+  - cost_per_correct_usd (numeric(16, 10)): total_cost_usd / n_correct (NULL when nothing is correct). | unit: USD
+  - cache_hit_rate (numeric(8, 6)): Share of decisions answered from the gateway semantic cache.
+  - escalation_rate (numeric(8, 6)): Share of decisions the cascade escalated.
+  - p50_latency_ms (numeric(14, 3)): Median decision latency.
+  - p95_latency_ms (numeric(14, 3)): 95th percentile decision latency.
+
+TABLE marts.fct_requests: One row per model call. A cascade decision that escalates has two rows (local call + hosted call), linked by decision_id. Use this table for per-call questions (tokens, latency, cache, cost per call).
+  grain: one row per model call (a cascade decision that escalates has two calls)
+  also called: requests, calls, model calls, LLM calls, API calls
+  - request_id (uuid): Unique id of one model call. Join key to Telltale events and to raw spans.
+  - decision_id (uuid): The ticket decision this call belongs to. Several calls can share one decision.
+  - trace_id (text): OpenTelemetry trace id (hex).
+  - run_id (text): Harness run that produced the call.
+  - requested_at (timestamptz): When the call started (span start time).
+  - tenant_id (text): Simulated team that sent the ticket (support, billing, sales).
+  - feature (text): Product feature; always ticket_triage for Tally's own runs.
+  - prompt_version (text): Prompt template version, or 'none' for the TF-IDF baseline.
+  - setup (text): Serving setup: A_tfidf (no LLM), B_local (Qwen via Cinch), C_hosted (API model), D_cascade (B then C when unsure). | values: B_local, A_tfidf
+  - split (text): Data split. Headline numbers use 'test' only; 'tune' is for choosing prompts and tau. | values: tune, test
+  - arm (text): Experiment arm: 'primary' (the reported configuration), 'prompt_selection' (non-chosen prompt runs on tune), 'cache_on' (gateway semantic cache enabled). | values: primary, prompt_selection, cache_on
+  - call_index (int): Position of the call within its decision (0 = first call).
+  - provider (text): gen_ai.provider.name of the call (vllm, openai, sklearn, ...). | values: vllm = local model served by vLLM behind Cinch; sklearn = TF-IDF baseline, no LLM
+  - model (text): Model that answered (response model when reported, otherwise requested model). | values: Qwen/Qwen2.5-7B-Instruct-AWQ, tfidf-word12-char35-logreg
+  - input_tokens (int): Prompt tokens billed or processed. | synonyms: prompt tokens, tokens in
+  - output_tokens (int): Completion tokens. | synonyms: completion tokens, tokens out
+  - cached_input_tokens (int): Prompt tokens served from the provider's prompt cache, when reported.
+  - latency_ms (numeric(14, 3)): Wall-clock latency of the call in milliseconds, as seen by the client. | synonyms: latency, response time | unit: ms
+  - ttft_ms (numeric(14, 3)): Time to first token; NULL because triage calls are not streamed.
+  - cache_status (text): Gateway semantic-cache status (HIT, MISS) or BYPASS when the cache was off or absent. | values: HIT = answered from the gateway semantic cache; MISS = cache on but no match; BYPASS = cache off or not applicable
+  - http_status (int): HTTP status returned to the client (200, or a gateway rejection such as 400/402/429).
+  - is_escalated (boolean): True when this call happened because the cascade escalated to the hosted model.
+  - reused_response (boolean): True when the cascade reused the identical, deterministic response recorded for setup B or C.
+  - confidence (double precision): Label probability from token logprobs (local model) or class probability (TF-IDF). NULL for the hosted model.
+  - validation_passed (boolean): The output parsed to exactly one valid intent label.
+  - cost_usd (numeric(14, 10)): Tally cost model, in US dollars. GPU amortisation + power for local calls, list price for hosted calls. | synonyms: cost, spend, true cost | unit: USD
+  - billed_usd (numeric(14, 10)): What Cinch's FinOps ledger charged for the call (hosted-style rates). For comparison only; never use as true cost. | synonyms: billed, charged, ledger charge, chargeback | unit: USD
+
+TABLE support.agents: Synthetic roster of support agents by team, with hourly cost.
+  grain: one row per support agent
+  also called: agents, staff, support staff, people, employees
+  - agent_id (text): Agent id.
+  - display_name (text): Agent display name. | synonyms: name
+  - team (text): Team the agent works in; matches tenant_id. | synonyms: tenant, department | values: support, billing, sales, test-loadgen
+  - email (text): Work email address. Personal data: never select or reveal it.
+  - hourly_cost_usd (numeric(8,2)): Fully loaded hourly cost of the agent. | synonyms: wage, salary per hour, rate | unit: USD
+  - is_active (boolean): Currently employed.
+  - hired_on (date): Hire date. | synonyms: start date, joined

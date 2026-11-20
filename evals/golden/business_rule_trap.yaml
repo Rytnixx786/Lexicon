@@ -1,0 +1,110 @@
+bucket: business_rule_trap
+items:
+  - id: G-T-01
+    question: How many tickets have been resolved?
+    tests_rules: [R-RESOLVED-IS-STATUS, R-EXCLUDE-TEST-TENANTS]
+    common_wrong_answers: ["count of 'resolved' events (double counts reopened tickets, includes load tests)"]
+    gold_sql: select count(*) from support.tickets where status in ('resolved', 'closed') and tenant_id not like 'test-%'
+  - id: G-T-02
+    question: How many tickets did each tenant receive?
+    tests_rules: [R-EXCLUDE-TEST-TENANTS]
+    gold_sql: select tenant_id, count(*) from support.tickets where tenant_id not like 'test-%' group by tenant_id
+  - id: G-T-03
+    question: What is our current support headcount?
+    tests_rules: [R-ACTIVE-HEADCOUNT]
+    gold_sql: select count(*) from support.agents where is_active and team not like 'test-%'
+  - id: G-T-04
+    question: What was the accuracy of the local model?
+    tests_rules: [R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+    gold_sql: select avg(is_correct::int) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-05
+    question: What did the local model cost per correct triage?
+    tests_rules: [R-CPC-RATIO, R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+    gold_sql: |
+      select sum(total_cost_usd) / nullif(count(*) filter (where is_correct), 0)
+      from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-06
+    question: How much did we spend on the local model's test-split triage?
+    tests_rules: [R-BILLED-NOT-COST, R-PRIMARY-ARM]
+    gold_sql: select sum(total_cost_usd) from marts.fct_outcomes where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-07
+    question: Which tenant has the most resolved tickets?
+    tests_rules: [R-RESOLVED-IS-STATUS, R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select tenant_id from support.tickets where status in ('resolved', 'closed') and tenant_id not like 'test-%'
+      group by tenant_id order by count(*) desc limit 1
+  - id: G-T-08
+    question: How many distinct tickets did each agent help resolve?
+    tests_rules: [R-AGENT-WORK-IS-AGENT-EVENTS, R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select e.agent_id, count(distinct e.ticket_id)
+      from support.ticket_events e join support.agents a on a.agent_id = e.agent_id
+      where e.event_type = 'resolved' and e.actor_type = 'agent' and a.team not like 'test-%'
+      group by e.agent_id
+  - id: G-T-09
+    question: Using the daily cost mart, what was the local model's cost per correct triage on the test split?
+    tests_rules: [R-CPC-RATIO, R-PRIMARY-ARM]
+    common_wrong_answers: ["avg(cost_per_correct_usd) across mart rows (average of ratios)"]
+    gold_sql: |
+      select sum(total_cost_usd) / nullif(sum(n_correct), 0) from marts.mart_cost_per_outcome
+      where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-10
+    question: How accurate was the local model on the tune split?
+    tests_rules: [R-PRIMARY-ARM]
+    common_wrong_answers: ["includes the prompt_selection arm (zero-shot prompt) and averages both prompts"]
+    gold_sql: select avg(is_correct::int) from marts.fct_outcomes where setup = 'B_local' and split = 'tune' and arm = 'primary'
+  - id: G-T-11
+    question: What was the average latency of the local model's calls on the test split?
+    tests_rules: [R-PRIMARY-ARM]
+    common_wrong_answers: ["includes the cache_on arm, whose cache hits return in ~0.2 s"]
+    gold_sql: select avg(latency_ms) from marts.fct_requests where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-12
+    question: How many tickets were reopened?
+    tests_rules: [R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select count(distinct e.ticket_id) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'reopened' and t.tenant_id not like 'test-%'
+  - id: G-T-13
+    question: What is the average hourly cost of our agents?
+    tests_rules: [R-ACTIVE-HEADCOUNT]
+    gold_sql: select avg(hourly_cost_usd) from support.agents where is_active and team not like 'test-%'
+  - id: G-T-14
+    question: How many tickets were escalated to a human last month?
+    tests_rules: [R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select count(distinct e.ticket_id) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'escalated_to_human' and t.tenant_id not like 'test-%'
+        and e.event_at >= date '2026-10-01' and e.event_at < date '2026-11-01'
+  - id: G-T-15
+    question: What is the misroute rate?
+    tests_rules: [R-EXCLUDE-TEST-TENANTS]
+    common_wrong_answers: ["includes the 300 load-test tickets, which are never misrouted"]
+    gold_sql: |
+      select count(*) filter (where ai_predicted_intent is distinct from final_intent)::numeric / count(*)
+      from support.tickets where tenant_id not like 'test-%'
+  - id: G-T-16
+    question: How much did Cinch's ledger charge for the local model's test-split calls?
+    tests_rules: [R-BILLED-NOT-COST, R-PRIMARY-ARM]
+    gold_sql: select sum(billed_usd) from marts.fct_requests where setup = 'B_local' and split = 'test' and arm = 'primary'
+  - id: G-T-17
+    question: Which setup is cheaper per correct triage?
+    tests_rules: [R-CPC-RATIO, R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+    gold_sql: |
+      select setup from marts.fct_outcomes where split = 'test' and arm = 'primary'
+      group by setup order by sum(total_cost_usd) / nullif(count(*) filter (where is_correct), 0) limit 1
+  - id: G-T-18
+    question: How many tickets are resolved for the sales tenant?
+    tests_rules: [R-RESOLVED-IS-STATUS]
+    gold_sql: select count(*) from support.tickets where tenant_id = 'sales' and status in ('resolved', 'closed')
+  - id: G-T-19
+    question: How many tickets were resolved without any human agent?
+    tests_rules: [R-RESOLVED-IS-STATUS, R-AGENT-WORK-IS-AGENT-EVENTS, R-EXCLUDE-TEST-TENANTS]
+    gold_sql: |
+      select count(*) from support.tickets
+      where status in ('resolved', 'closed') and assigned_agent_id is null and tenant_id not like 'test-%'
+  - id: G-T-20
+    question: What is the local model's accuracy for the support tenant?
+    tests_rules: [R-HEADLINE-TEST-ONLY, R-PRIMARY-ARM]
+    gold_sql: |
+      select avg(is_correct::int) from marts.fct_outcomes
+      where setup = 'B_local' and split = 'test' and arm = 'primary' and tenant_id = 'support'

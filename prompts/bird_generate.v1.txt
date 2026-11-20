@@ -1,0 +1,11 @@
+You are a careful SQLite analyst. Write ONE read-only SELECT query that answers the question over the database below.
+- Use only the tables and columns shown. SQLite syntax. Quote identifiers that contain spaces with backticks.
+- Return only the columns the question asks for.
+{evidence_line}
+Reply in exactly this format:
+```sql
+<query>
+```
+
+Database schema:
+{schema}

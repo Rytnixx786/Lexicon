@@ -1,0 +1,23 @@
+{
+  "concurrency": 4,
+  "context_fingerprint": "8fa1c9ba3ef79f23",
+  "deterministic_triggers": true,
+  "embeddings": true,
+  "golden_version": "golden-e73a9435333b",
+  "hardware": {
+    "concurrency": 8,
+    "mean_power_w": null,
+    "n_live_calls": 269,
+    "note": "seeded from the original live run (concurrency 8, 92% VRAM); power not sampled in that run, Tally's measured power is used",
+    "wall_seconds": 97.2226152420044
+  },
+  "level": "L0",
+  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+  "n_calls": 312,
+  "n_items": 120,
+  "n_live_calls": 0,
+  "run_id": "qwen7b-L0",
+  "seed": 0,
+  "snapshot_sha256": "9ac7df9f5ea0650c51ba668c6fcd3546af263cb4e8ddcb46d46d92d56fa524df",
+  "wall_seconds": 1.6153626441955566
+}

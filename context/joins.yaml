@@ -1,0 +1,24 @@
+version: 1
+joins:
+  - left: marts.fct_outcomes
+    right: marts.fct_requests
+    condition: "fct_outcomes.final_request_id = fct_requests.request_id"
+    relationship: one_to_one
+    note: "For all calls of a decision use fct_requests.decision_id = fct_outcomes.decision_id (one_to_many) and aggregate first."
+  - {left: marts.fct_outcomes, right: marts.dim_tenant, condition: "fct_outcomes.tenant_id = dim_tenant.tenant_id", relationship: many_to_one}
+  - {left: marts.fct_requests, right: marts.dim_tenant, condition: "fct_requests.tenant_id = dim_tenant.tenant_id", relationship: many_to_one}
+  - {left: marts.fct_outcomes, right: marts.dim_prompt_version, condition: "fct_outcomes.prompt_version = dim_prompt_version.prompt_version", relationship: many_to_one}
+  - {left: support.tickets, right: marts.fct_outcomes, condition: "tickets.decision_id = fct_outcomes.decision_id", relationship: one_to_one}
+  - {left: support.ticket_events, right: support.tickets, condition: "ticket_events.ticket_id = tickets.ticket_id", relationship: many_to_one}
+  - {left: support.tickets, right: support.agents, condition: "tickets.assigned_agent_id = agents.agent_id", relationship: many_to_one}
+  - {left: support.ticket_events, right: support.agents, condition: "ticket_events.agent_id = agents.agent_id", relationship: many_to_one}
+  - left: support.tickets
+    right: support.sla_policies
+    condition: "tickets.tenant_id = sla_policies.tenant_id and tickets.priority = sla_policies.priority"
+    relationship: many_to_one
+  - {left: support.tickets, right: marts.dim_tenant, condition: "tickets.tenant_id = dim_tenant.tenant_id", relationship: many_to_one}
+forbidden:
+  - pair: [marts.fct_requests, marts.mart_cost_per_outcome]
+    reason: Different grains; aggregate fct_requests first.
+  - pair: [support.ticket_events, marts.fct_outcomes]
+    reason: Join events to tickets first, then tickets to outcomes; a direct join fans out.

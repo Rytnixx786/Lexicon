@@ -1,0 +1,147 @@
+version: 1
+examples:
+  - id: EX-101
+    question: How many tickets of each priority does the billing tenant have?
+    sql: select priority, count(*) from support.tickets where tenant_id = 'billing' group by priority
+    tables: [support.tickets]
+  - id: EX-102
+    question: Ticket count per channel for real tenants.
+    sql: select channel, count(*) from support.tickets where tenant_id not like 'test-%' group by channel
+    tables: [support.tickets]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+  - id: EX-103
+    question: Per real tenant, how many tickets are resolved but not yet closed?
+    sql: select tenant_id, count(*) from support.tickets where status = 'resolved' and tenant_id not like 'test-%' group by tenant_id
+    tables: [support.tickets]
+    metric_refs: [resolved_tickets]
+    rule_refs: [R-RESOLVED-IS-STATUS]
+  - id: EX-104
+    question: Misroute rate of the support tenant.
+    sql: |
+      select count(*) filter (where ai_predicted_intent is distinct from final_intent)::numeric / count(*)
+      from support.tickets where tenant_id = 'support'
+    tables: [support.tickets]
+    metric_refs: [misroute_rate]
+  - id: EX-105
+    question: Which final intents are misrouted most often (real tenants)?
+    sql: |
+      select final_intent, count(*) filter (where ai_predicted_intent is distinct from final_intent) as misroutes
+      from support.tickets where tenant_id not like 'test-%' group by final_intent order by misroutes desc limit 5
+    tables: [support.tickets]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+  - id: EX-106
+    question: Tickets opened per week for the billing tenant.
+    sql: select date_trunc('week', opened_at) as week, count(*) from support.tickets where tenant_id = 'billing' group by 1
+    tables: [support.tickets]
+  - id: EX-107
+    question: How many billing tickets were opened in October 2026?
+    sql: |
+      select count(*) from support.tickets
+      where tenant_id = 'billing' and opened_at >= date '2026-10-01' and opened_at < date '2026-11-01'
+    tables: [support.tickets]
+  - id: EX-108
+    question: Number of reopen events per real tenant.
+    sql: |
+      select t.tenant_id, count(*) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'reopened' and t.tenant_id not like 'test-%' group by t.tenant_id
+    tables: [support.ticket_events, support.tickets]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
+  - id: EX-109
+    question: Reopen rate of the billing tenant.
+    sql: |
+      select count(distinct e.ticket_id) filter (where e.event_type = 'reopened')::numeric
+             / count(distinct e.ticket_id) filter (where e.event_type = 'resolved')
+      from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id where t.tenant_id = 'billing'
+    tables: [support.ticket_events, support.tickets]
+    metric_refs: [reopen_rate]
+  - id: EX-110
+    question: Average hours from opening to the first resolution for sales tickets.
+    sql: |
+      with first_res as (
+        select ticket_id, min(event_at) as first_resolved_at from support.ticket_events where event_type = 'resolved' group by ticket_id
+      )
+      select avg(extract(epoch from f.first_resolved_at - t.opened_at) / 3600)
+      from support.tickets t join first_res f on f.ticket_id = t.ticket_id where t.tenant_id = 'sales'
+    tables: [support.ticket_events, support.tickets]
+  - id: EX-111
+    question: How many resolution events did agents (not bots) perform per real tenant?
+    sql: |
+      select t.tenant_id, count(*) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where e.event_type = 'resolved' and e.actor_type = 'agent' and t.tenant_id not like 'test-%' group by t.tenant_id
+    tables: [support.ticket_events, support.tickets]
+    rule_refs: [R-AGENT-WORK-IS-AGENT-EVENTS]
+  - id: EX-112
+    question: Event counts by type for the sales tenant.
+    sql: |
+      select e.event_type, count(*) from support.ticket_events e join support.tickets t on t.ticket_id = e.ticket_id
+      where t.tenant_id = 'sales' group by e.event_type
+    tables: [support.ticket_events, support.tickets]
+  - id: EX-113
+    question: How many active agents does each real team have?
+    sql: select team, count(*) from support.agents where is_active and team not like 'test-%' group by team
+    tables: [support.agents]
+    rule_refs: [R-ACTIVE-HEADCOUNT]
+  - id: EX-114
+    question: Which agents are inactive?
+    sql: select agent_id, display_name, team from support.agents where not is_active
+    tables: [support.agents]
+  - id: EX-115
+    question: Total hourly cost of the active sales team.
+    sql: select sum(hourly_cost_usd) from support.agents where team = 'sales' and is_active
+    tables: [support.agents]
+  - id: EX-116
+    question: Agents hired before 2025, with their team.
+    sql: select agent_id, display_name, team, hired_on from support.agents where hired_on < date '2025-01-01' and team not like 'test-%'
+    tables: [support.agents]
+  - id: EX-117
+    question: Number of tickets assigned to each billing agent.
+    sql: |
+      select a.agent_id, a.display_name, count(t.ticket_id) from support.agents a
+      left join support.tickets t on t.assigned_agent_id = a.agent_id where a.team = 'billing' group by a.agent_id, a.display_name
+    tables: [support.agents, support.tickets]
+  - id: EX-118
+    question: First-response and resolution targets of the billing tenant by priority.
+    sql: select priority, first_response_minutes, resolution_hours from support.sla_policies where tenant_id = 'billing'
+    tables: [support.sla_policies]
+  - id: EX-119
+    question: For high-priority sales tickets, how many breached the resolution target on their first resolution?
+    sql: |
+      with first_res as (
+        select ticket_id, min(event_at) as first_resolved_at from support.ticket_events where event_type = 'resolved' group by ticket_id
+      )
+      select count(*) filter (where f.first_resolved_at - t.opened_at > make_interval(hours => s.resolution_hours))
+      from support.tickets t join first_res f on f.ticket_id = t.ticket_id
+      join support.sla_policies s on s.tenant_id = t.tenant_id and s.priority = t.priority
+      where t.tenant_id = 'sales' and t.priority = 'high'
+    tables: [support.tickets, support.ticket_events, support.sla_policies]
+    metric_refs: [sla_breach_rate]
+  - id: EX-120
+    question: Local-model triage accuracy on tickets that came in through email.
+    sql: |
+      select avg(o.is_correct::int) from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      where t.channel = 'email'
+    tables: [support.tickets, marts.fct_outcomes]
+  - id: EX-121
+    question: Average AI triage cost of tickets that were reopened.
+    sql: |
+      select avg(o.total_cost_usd) from support.tickets t join marts.fct_outcomes o on o.decision_id = t.decision_id
+      where exists (select 1 from support.ticket_events e where e.ticket_id = t.ticket_id and e.event_type = 'reopened')
+    tables: [support.tickets, marts.fct_outcomes, support.ticket_events]
+  - id: EX-122
+    question: Share of misrouted tickets that ended up reopened (real tenants).
+    sql: |
+      select avg((exists (select 1 from support.ticket_events e where e.ticket_id = t.ticket_id and e.event_type = 'reopened'))::int)
+      from support.tickets t where t.tenant_id not like 'test-%' and t.ai_predicted_intent is distinct from t.final_intent
+    tables: [support.tickets, support.ticket_events]
+  - id: EX-123
+    question: Tickets per agent display name for the support tenant, only agents that are active.
+    sql: |
+      select a.display_name, count(*) from support.tickets t join support.agents a on a.agent_id = t.assigned_agent_id
+      where t.tenant_id = 'support' and a.is_active group by a.display_name
+    tables: [support.tickets, support.agents]
+  - id: EX-124
+    question: Number of open tickets per real tenant display name.
+    sql: |
+      select d.display_name, count(*) from support.tickets t join marts.dim_tenant d on d.tenant_id = t.tenant_id
+      where t.status = 'open' group by d.display_name
+    tables: [support.tickets, marts.dim_tenant]

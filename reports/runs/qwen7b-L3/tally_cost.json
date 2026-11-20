@@ -1,0 +1,9 @@
+{
+  "run_id": "qwen7b-L3",
+  "n_calls": 280,
+  "calls_found_in_tally": 280,
+  "questions": 120,
+  "mean_cost_usd_per_question": 0.00024200921166666665,
+  "total_cost_usd": 0.0290411054,
+  "source": "Tally marts.fct_requests"
+}

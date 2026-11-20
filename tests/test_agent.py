@@ -87,6 +87,15 @@ def test_classifier_ambiguity_interrupts_and_resumes() -> None:
     assert "Clarification from the user: option two" in llm.calls[-1].user
 
 
+def test_clarification_answer_guides_post_clarification_retrieval() -> None:
+    agent, llm, _ex = make("ambiguous")
+    tid, out = agent.start("How are we doing?")
+    assert is_interrupted(out)
+    out = agent.resume(tid, "Show cost per correct triage by setup from marts.fct_outcomes")
+    assert out["answer"]["ok"]
+    assert "marts.fct_outcomes" in llm.calls[-1].system
+
+
 def test_deterministic_metric_trigger_only_from_l2() -> None:
     agent, _, _ = make(level="L3")
     _, out = agent.start("What is our escalation rate?")

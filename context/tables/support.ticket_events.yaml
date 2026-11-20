@@ -10,7 +10,7 @@ ai_context: >-
   Use for timing (time to first resolution, reopen rates, escalation to humans) and agent workload. Agent workload
   counts only events with actor_type = 'agent'. Join to support.tickets on ticket_id to filter tenants.
 synonyms: [events, ticket history, lifecycle, audit log]
-rule_refs: [R-RESOLVED-IS-STATUS, R-AGENT-WORK-IS-AGENT-EVENTS, R-EXCLUDE-TEST-TENANTS]
+rule_refs: [R-AGENT-WORK-IS-AGENT-EVENTS, R-EXCLUDE-TEST-TENANTS]
 metric_refs: [reopen_rate, human_escalation_rate]
 columns:
   - {name: event_id, type: bigint, description: "Event id."}

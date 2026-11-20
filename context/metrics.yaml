@@ -76,7 +76,7 @@ metrics:
     expr: "count(*) filter (where status in ('resolved', 'closed'))"
     description: Tickets currently resolved or closed. Reopened tickets that are not re-resolved do not count; never count 'resolved' events.
     synonyms: [resolved, solved tickets, tickets closed out]
-    rule_refs: [R-RESOLVED-IS-STATUS, R-EXCLUDE-TEST-TENANTS]
+    rule_refs: [R-EXCLUDE-TEST-TENANTS]
     expected_range: [0, 100000]
   - id: misroute_rate
     label: Misroute rate

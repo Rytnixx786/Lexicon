@@ -81,7 +81,7 @@ flowchart LR
   - the clarify or refuse bucket gets worse, or
   - over-refusal or false-clarification rises more than 5 points.
 
-  The last rule stops "refuse everything" from passing.
+  The last rule stops "refuse everything" from passing. See live blocked demo PR [#1](https://github.com/Rytnixx786/Lexicon/pull/1) (`demo/remove-reopen-rule`).
 - **Cost per question, measured by Tally:** every LLM call carries `X-Request-ID`, `X-Tenant-ID: lexicon` and `X-Prompt-Version` through Cinch. `lexicon publish qwen7b-L3` exports GenAI spans and Tally-model costs into Tally, passes Tally's 46/46 `dbt build` (after T8 scoped `fct_requests.decision_id` tests to triage traffic, ADR-022), and reads `$0.000242` / question (`280/280` calls) back from `marts.fct_requests`.
 - **External anchor:** a 200-question stratified slice of BIRD Mini-Dev (SQLite), run with and without BIRD's `evidence`. That repeats the context question on public data.
 

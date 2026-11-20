@@ -40,9 +40,18 @@ class GpuCost:
 
     @classmethod
     def from_tally(cls, path: Path | None = None) -> GpuCost:
-        cfg = yaml.safe_load(
-            (path or tally_root() / "config" / "cost_model.yaml").read_text(encoding="utf-8")
-        )["local_gpu"]
+        p = path or tally_root() / "config" / "cost_model.yaml"
+        if not p.exists():
+            # Clean-clone / CI fallback matching Tally config/cost_model.yaml (checked 2026-11-20).
+            return cls(
+                purchase_usd=400.0,
+                lifetime_years=3.0,
+                utilisation=0.30,
+                board_power_w=170.0,
+                system_overhead_w=80.0,
+                electricity_usd_per_kwh=0.10,
+            )
+        cfg = yaml.safe_load(p.read_text(encoding="utf-8"))["local_gpu"]
         return cls(**{k: float(cfg[k]) for k in cls.__dataclass_fields__})
 
     def hourly_usd(self, measured_power_w: float | None = None) -> float:
